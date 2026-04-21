@@ -6,6 +6,18 @@ function mapBusinessError(message: string) {
   switch (message) {
     case "CANNOT_DELETE_SELF":
       return fail("CANNOT_DELETE_SELF", "You cannot delete your own account", 400);
+    case "ADMIN_ROLE_RESTRICTED":
+      return fail(
+        "ADMIN_ROLE_RESTRICTED",
+        "Only super admins can manage admin accounts",
+        403,
+      );
+    case "SUPER_ADMIN_ROLE_LOCKED":
+      return fail(
+        "SUPER_ADMIN_ROLE_LOCKED",
+        "Super admin accounts cannot be deleted here",
+        403,
+      );
     case "LAST_ADMIN":
       return fail("LAST_ADMIN", "Cannot delete the last remaining admin", 400);
     case "USER_NOT_FOUND":
@@ -23,7 +35,10 @@ export async function DELETE(
     const actor = await requireAdminUser();
     const { userId } = await context.params;
 
-    await deleteUserAccount(userId, actor.id);
+    await deleteUserAccount(userId, {
+      id: actor.id,
+      role: actor.role,
+    });
     return ok({ deleted: userId });
   } catch (error) {
     if (error instanceof Error) {

@@ -2,10 +2,10 @@ import { redirect } from "next/navigation";
 import type { PropsWithChildren } from "react";
 
 import { AdminShell } from "@/components/admin/admin-shell";
-import { requireAdminUser } from "@/lib/auth/server";
+import { requireStaffUser } from "@/lib/auth/server";
 
 export default async function AdminLayout({ children }: PropsWithChildren) {
-  const admin = await requireAdminUser().catch((error: unknown) => {
+  const admin = await requireStaffUser().catch((error: unknown) => {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       redirect("/login");
     }

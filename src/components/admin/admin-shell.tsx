@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type PropsWithChildren } from "react";
 
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils/cn";
 
@@ -34,7 +35,10 @@ const navGroups: {
   },
   {
     label: "People",
-    items: [{ href: "/admin/users", label: "Users", icon: "users" }],
+    items: [
+      { href: "/admin/profile", label: "Profile", icon: "user" },
+      { href: "/admin/users", label: "Users", icon: "users" },
+    ],
   },
 ];
 
@@ -178,10 +182,13 @@ export function AdminShell({ children, adminName, adminEmail }: AdminShellProps)
             </h1>
           </div>
 
-          <span className="hidden items-center gap-1.5 rounded-full border border-[color:var(--color-warning)]/30 bg-[color:color-mix(in_srgb,var(--color-warning)_12%,transparent)] px-3 py-1 text-xs font-medium text-[color:var(--color-warning)] sm:inline-flex">
-            <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--color-warning)]" />
-            Admin mode
-          </span>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <span className="hidden items-center gap-1.5 rounded-full border border-[color:var(--color-warning)]/30 bg-[color:color-mix(in_srgb,var(--color-warning)_12%,transparent)] px-3 py-1 text-xs font-medium text-[color:var(--color-warning)] sm:inline-flex">
+              <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--color-warning)]" />
+              Admin mode
+            </span>
+          </div>
         </header>
 
         <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
@@ -251,6 +258,22 @@ function NavIcon({ name, className }: { name: string; className?: string }) {
           <line x1="4" y1="6" x2="20" y2="6" />
           <line x1="4" y1="12" x2="20" y2="12" />
           <line x1="4" y1="18" x2="20" y2="18" />
+        </svg>
+      );
+    case "user":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 20a8 8 0 0 1 16 0" />
+        </svg>
+      );
+    case "users":
+      return (
+        <svg {...common}>
+          <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
       );
     default:

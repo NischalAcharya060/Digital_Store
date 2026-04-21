@@ -1,11 +1,11 @@
 import { fail, ok, parseJson } from "@/lib/utils/api";
-import { requireAdminUser } from "@/lib/auth/server";
+import { requireStaffUser } from "@/lib/auth/server";
 import { inventoryUploadSchema } from "@/lib/validation/schemas";
 import { uploadInventoryCodes } from "@/services/admin.service";
 
 export async function POST(request: Request) {
   try {
-    await requireAdminUser();
+    await requireStaffUser();
 
     const payload = await parseJson(request);
     const parsed = inventoryUploadSchema.safeParse(payload);
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     }
 
     if (error instanceof Error && error.message === "FORBIDDEN") {
-      return fail("FORBIDDEN", "Admin access required", 403);
+      return fail("FORBIDDEN", "Staff access required", 403);
     }
 
     return fail("INVENTORY_UPLOAD_FAILED", "Unable to upload inventory", 500);

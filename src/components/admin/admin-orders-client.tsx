@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 
 interface AdminOrder {
@@ -60,7 +59,11 @@ export function AdminOrdersClient() {
   }
 
   useEffect(() => {
-    void load();
+    const timeoutId = window.setTimeout(() => {
+      void load();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   async function updateStatus(orderId: string, status: AdminOrder["status"]) {

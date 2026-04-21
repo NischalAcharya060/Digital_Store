@@ -1,12 +1,12 @@
 import { fail, ok, parseJson } from "@/lib/utils/api";
-import { requireAdminUser } from "@/lib/auth/server";
+import { requireStaffUser } from "@/lib/auth/server";
 import { adminCategorySchema } from "@/lib/validation/schemas";
 import { upsertCategory } from "@/services/admin.service";
 import { listCategories } from "@/services/catalog.service";
 
 export async function GET() {
   try {
-    await requireAdminUser();
+    await requireStaffUser();
     const categories = await listCategories();
     return ok({ categories });
   } catch (error) {
@@ -14,7 +14,7 @@ export async function GET() {
       return fail("UNAUTHORIZED", "You need to sign in", 401);
     }
     if (error instanceof Error && error.message === "FORBIDDEN") {
-      return fail("FORBIDDEN", "Admin access required", 403);
+      return fail("FORBIDDEN", "Staff access required", 403);
     }
     return fail("ADMIN_CATEGORIES_FAILED", "Unable to fetch categories", 500);
   }
@@ -22,7 +22,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    await requireAdminUser();
+    await requireStaffUser();
     const payload = await parseJson(request);
     const parsed = adminCategorySchema.safeParse(payload);
 
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       return fail("UNAUTHORIZED", "You need to sign in", 401);
     }
     if (error instanceof Error && error.message === "FORBIDDEN") {
-      return fail("FORBIDDEN", "Admin access required", 403);
+      return fail("FORBIDDEN", "Staff access required", 403);
     }
     return fail("ADMIN_CATEGORIES_SAVE_FAILED", "Unable to save category", 500);
   }

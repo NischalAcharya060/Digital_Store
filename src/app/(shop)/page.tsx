@@ -64,7 +64,6 @@ export default async function Home() {
     <div className="space-y-14">
       {/* HERO */}
       <section
-        data-zone="dark"
         className="relative overflow-hidden rounded-3xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-canvas-2)] p-8 sm:p-12"
       >
         {/* Ambient gradient blobs */}

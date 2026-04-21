@@ -58,7 +58,7 @@ export async function requireAdminUser() {
     throw new Error("UNAUTHORIZED");
   }
 
-  if (profile.role !== "admin") {
+  if (profile.role !== "admin" && profile.role !== "super_admin") {
     throw new Error("FORBIDDEN");
   }
 
@@ -66,8 +66,7 @@ export async function requireAdminUser() {
 }
 
 /**
- * Allow both admins and moderators for read-only admin areas.
- * Mutations should still gate with `requireAdminUser`.
+ * Allow super admins, admins, and moderators for staff admin areas.
  */
 export async function requireStaffUser() {
   const profile = await getCurrentUserProfile();
@@ -76,7 +75,11 @@ export async function requireStaffUser() {
     throw new Error("UNAUTHORIZED");
   }
 
-  if (profile.role !== "admin" && profile.role !== "moderator") {
+  if (
+    profile.role !== "admin" &&
+    profile.role !== "super_admin" &&
+    profile.role !== "moderator"
+  ) {
     throw new Error("FORBIDDEN");
   }
 

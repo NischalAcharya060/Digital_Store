@@ -1,12 +1,12 @@
 import { fail, ok, parseJson } from "@/lib/utils/api";
-import { requireAdminUser } from "@/lib/auth/server";
+import { requireStaffUser } from "@/lib/auth/server";
 import { adminProductSchema } from "@/lib/validation/schemas";
 import { upsertProduct } from "@/services/admin.service";
 import { listAllProducts } from "@/services/catalog.service";
 
 export async function GET() {
   try {
-    await requireAdminUser();
+    await requireStaffUser();
     const products = await listAllProducts();
     return ok({ products });
   } catch (error) {
@@ -15,7 +15,7 @@ export async function GET() {
     }
 
     if (error instanceof Error && error.message === "FORBIDDEN") {
-      return fail("FORBIDDEN", "Admin access required", 403);
+      return fail("FORBIDDEN", "Staff access required", 403);
     }
 
     return fail("ADMIN_PRODUCTS_FAILED", "Unable to fetch products", 500);
@@ -24,7 +24,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    await requireAdminUser();
+    await requireStaffUser();
 
     const payload = await parseJson(request);
     const parsed = adminProductSchema.safeParse(payload);
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     }
 
     if (error instanceof Error && error.message === "FORBIDDEN") {
-      return fail("FORBIDDEN", "Admin access required", 403);
+      return fail("FORBIDDEN", "Staff access required", 403);
     }
 
     return fail("ADMIN_PRODUCTS_SAVE_FAILED", "Unable to save product", 500);

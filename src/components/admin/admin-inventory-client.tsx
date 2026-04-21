@@ -32,7 +32,11 @@ export function AdminInventoryClient() {
   }
 
   useEffect(() => {
-    void loadProducts();
+    const timeoutId = window.setTimeout(() => {
+      void loadProducts();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const codeCount = useMemo(

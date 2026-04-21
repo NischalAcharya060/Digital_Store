@@ -7,6 +7,18 @@ function mapBusinessError(message: string) {
   switch (message) {
     case "CANNOT_SUSPEND_SELF":
       return fail("CANNOT_SUSPEND_SELF", "You cannot suspend your own account", 400);
+    case "ADMIN_ROLE_RESTRICTED":
+      return fail(
+        "ADMIN_ROLE_RESTRICTED",
+        "Only super admins can manage admin accounts",
+        403,
+      );
+    case "SUPER_ADMIN_ROLE_LOCKED":
+      return fail(
+        "SUPER_ADMIN_ROLE_LOCKED",
+        "Super admin account status cannot be changed here",
+        403,
+      );
     case "LAST_ADMIN":
       return fail("LAST_ADMIN", "Cannot suspend the last remaining admin", 400);
     case "USER_NOT_FOUND":
@@ -33,7 +45,10 @@ export async function PATCH(
     const user = await setUserStatus(
       userId,
       parsed.data.status,
-      actor.id,
+      {
+        id: actor.id,
+        role: actor.role,
+      },
       parsed.data.reason,
     );
     return ok({ user });

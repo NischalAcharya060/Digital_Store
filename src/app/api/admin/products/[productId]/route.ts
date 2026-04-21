@@ -1,5 +1,5 @@
 import { fail, ok } from "@/lib/utils/api";
-import { requireAdminUser } from "@/lib/auth/server";
+import { requireStaffUser } from "@/lib/auth/server";
 import { deleteProduct } from "@/services/admin.service";
 
 export async function DELETE(
@@ -7,7 +7,7 @@ export async function DELETE(
   context: { params: Promise<{ productId: string }> },
 ) {
   try {
-    await requireAdminUser();
+    await requireStaffUser();
     const { productId } = await context.params;
     await deleteProduct(productId);
     return ok({ deleted: productId });
@@ -16,7 +16,7 @@ export async function DELETE(
       return fail("UNAUTHORIZED", "You need to sign in", 401);
     }
     if (error instanceof Error && error.message === "FORBIDDEN") {
-      return fail("FORBIDDEN", "Admin access required", 403);
+      return fail("FORBIDDEN", "Staff access required", 403);
     }
     return fail("ADMIN_PRODUCT_DELETE_FAILED", "Unable to delete product", 500);
   }

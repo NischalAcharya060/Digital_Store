@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -10,10 +10,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { cn } from "@/lib/utils/cn";
 
-const links = [
+const baseLinks = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Store" },
-  { href: "/orders", label: "Orders" },
 ];
 
 export function StoreHeader() {
@@ -21,14 +20,13 @@ export function StoreHeader() {
   const { user, profile, logout } = useAuth();
   const { count } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const links = user ? [...baseLinks, { href: "/orders", label: "Orders" }] : baseLinks;
 
-  const isAdmin = profile?.role === "admin";
+  const isAdmin =
+    profile?.role === "admin" ||
+    profile?.role === "super_admin" ||
+    profile?.role === "moderator";
   const isAdminRoute = pathname.startsWith("/admin");
-
-  // Close mobile drawer on route change
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
 
   return (
     <header
@@ -123,6 +121,11 @@ export function StoreHeader() {
               <span className="max-w-[8rem] truncate text-xs text-[color:var(--color-text-subtle)]">
                 {profile?.name ?? user.email}
               </span>
+              <Link href="/profile">
+                <Button size="sm" variant="ghost">
+                  Profile
+                </Button>
+              </Link>
               <Button size="sm" variant="secondary" onClick={logout}>
                 Logout
               </Button>
@@ -159,6 +162,7 @@ export function StoreHeader() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setMobileOpen(false)}
                   className={cn(
                     "rounded-lg px-3 py-2 text-sm transition",
                     active
@@ -173,21 +177,32 @@ export function StoreHeader() {
             {isAdmin ? (
               <Link
                 href="/admin"
+                onClick={() => setMobileOpen(false)}
                 className="rounded-lg px-3 py-2 text-sm text-[color:var(--color-warning)] hover:bg-[color:var(--color-surface-2)]"
               >
                 Admin
               </Link>
             ) : null}
             {user ? (
-              <button
-                onClick={logout}
-                className="mt-1 rounded-lg px-3 py-2 text-left text-sm text-[color:var(--color-text-muted)] hover:bg-[color:var(--color-surface-2)]"
-              >
-                Logout ({profile?.name ?? user.email})
-              </button>
+              <>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileOpen(false)}
+                  className="mt-1 rounded-lg px-3 py-2 text-sm text-[color:var(--color-text)] hover:bg-[color:var(--color-surface-2)]"
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={logout}
+                  className="mt-1 rounded-lg px-3 py-2 text-left text-sm text-[color:var(--color-text-muted)] hover:bg-[color:var(--color-surface-2)]"
+                >
+                  Logout ({profile?.name ?? user.email})
+                </button>
+              </>
             ) : (
               <Link
                 href="/login"
+                onClick={() => setMobileOpen(false)}
                 className="mt-1 rounded-lg bg-[linear-gradient(90deg,var(--color-accent),var(--color-accent-2))] px-3 py-2 text-center text-sm font-medium text-white"
               >
                 Login

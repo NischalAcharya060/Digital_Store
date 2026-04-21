@@ -5,8 +5,20 @@ import { updateUserRole } from "@/services/user.service";
 
 function mapBusinessError(message: string) {
   switch (message) {
-    case "CANNOT_DEMOTE_SELF":
-      return fail("CANNOT_DEMOTE_SELF", "You cannot change your own admin role", 400);
+    case "CANNOT_CHANGE_SELF_ROLE":
+      return fail("CANNOT_CHANGE_SELF_ROLE", "You cannot change your own role", 400);
+    case "ADMIN_ROLE_RESTRICTED":
+      return fail(
+        "ADMIN_ROLE_RESTRICTED",
+        "Only super admins can appoint or change admins",
+        403,
+      );
+    case "SUPER_ADMIN_ROLE_LOCKED":
+      return fail(
+        "SUPER_ADMIN_ROLE_LOCKED",
+        "Super admin role changes are locked",
+        403,
+      );
     case "LAST_ADMIN":
       return fail("LAST_ADMIN", "At least one admin must remain", 400);
     case "USER_NOT_FOUND":
@@ -30,7 +42,10 @@ export async function PATCH(
       return fail("INVALID_PAYLOAD", "Invalid role payload", 422);
     }
 
-    const user = await updateUserRole(userId, parsed.data.role, actor.id);
+    const user = await updateUserRole(userId, parsed.data.role, {
+      id: actor.id,
+      role: actor.role,
+    });
     return ok({ user });
   } catch (error) {
     if (error instanceof Error) {

@@ -32,8 +32,10 @@ export function CheckoutClient() {
 
   if (!user) {
     return (
-      <div className="rounded-xl border border-[var(--color-border)] bg-white p-6 text-center shadow-sm">
-        <p className="text-sm text-slate-700">You need to login before checkout.</p>
+      <div className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-6 text-center shadow-sm">
+        <p className="text-sm text-[color:var(--color-text-muted)]">
+          You need to login before checkout.
+        </p>
         <Button className="mt-3" onClick={() => router.push("/login")}>
           Go to login
         </Button>
@@ -43,8 +45,10 @@ export function CheckoutClient() {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-xl border border-[var(--color-border)] bg-white p-6 text-center shadow-sm">
-        <p className="text-sm text-slate-700">Your cart is empty. Add products before checkout.</p>
+      <div className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-6 text-center shadow-sm">
+        <p className="text-sm text-[color:var(--color-text-muted)]">
+          Your cart is empty. Add products before checkout.
+        </p>
         <Button className="mt-3" onClick={() => router.push("/products")}>
           Browse products
         </Button>
@@ -132,16 +136,16 @@ export function CheckoutClient() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-      <section className="space-y-6 rounded-xl border border-[var(--color-border)] bg-white p-5 shadow-sm">
+      <section className="space-y-6 rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-5 shadow-sm">
         <div>
-          <h1 className="text-2xl font-semibold text-[var(--color-primary)]">Checkout</h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <h1 className="text-2xl font-semibold text-[color:var(--color-text)]">Checkout</h1>
+          <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">
             Complete payment and receive delivery codes instantly.
           </p>
         </div>
 
         <div>
-          <p className="text-sm font-medium text-slate-700">Payment method</p>
+          <p className="text-sm font-medium text-[color:var(--color-text)]">Payment method</p>
           <div className="mt-2 flex gap-3">
             <Button
               variant={paymentMethod === "esewa" ? "primary" : "secondary"}
@@ -163,8 +167,8 @@ export function CheckoutClient() {
             {loading ? "Creating order..." : "Create order"}
           </Button>
         ) : (
-          <div className="space-y-3 rounded-lg border border-dashed border-[var(--color-border)] p-4">
-            <p className="text-sm text-slate-700">
+          <div className="space-y-3 rounded-lg border border-dashed border-[color:var(--color-surface-border)] bg-[color:var(--color-surface-2)] p-4">
+            <p className="text-sm text-[color:var(--color-text-muted)]">
               Order <span className="font-medium">{createdOrder.order.id}</span> created.
             </p>
 
@@ -196,12 +200,16 @@ export function CheckoutClient() {
           </div>
         )}
 
-        {error ? <p className="text-sm text-[var(--color-danger)]">{error}</p> : null}
+        {error ? (
+          <p className="rounded-lg border border-[color:var(--color-danger)]/30 bg-[color:color-mix(in_srgb,var(--color-danger)_10%,transparent)] px-3 py-2 text-sm text-[color:var(--color-danger)]">
+            {error}
+          </p>
+        ) : null}
       </section>
 
-      <aside className="h-fit rounded-xl border border-[var(--color-border)] bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-[var(--color-primary)]">Summary</h2>
-        <ul className="mt-3 space-y-2 text-sm text-slate-700">
+      <aside className="h-fit rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-[color:var(--color-text)]">Summary</h2>
+        <ul className="mt-3 space-y-2 text-sm text-[color:var(--color-text-muted)]">
           {items.map((item) => (
             <li key={item.productId} className="flex justify-between gap-2">
               <span>
@@ -211,7 +219,7 @@ export function CheckoutClient() {
             </li>
           ))}
         </ul>
-        <p className="mt-4 border-t border-[var(--color-border)] pt-4 text-lg font-semibold text-[var(--color-primary)]">
+        <p className="mt-4 border-t border-[color:var(--color-surface-border)] pt-4 text-lg font-semibold text-[color:var(--color-text)]">
           Total: NPR {total.toFixed(2)}
         </p>
       </aside>

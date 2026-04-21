@@ -4,10 +4,7 @@ export function StoreFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer
-      data-zone="dark"
-      className="mt-12 border-t border-[color:var(--color-surface-border)] bg-[color:var(--color-canvas)]"
-    >
+    <footer className="mt-12 border-t border-[color:var(--color-surface-border)] bg-[color:var(--color-canvas)]">
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-4">
         <div className="md:col-span-2">
           <div className="flex items-center gap-2">

@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type PropsWithChildren,
@@ -37,12 +36,7 @@ function readInitialTheme(): Theme {
 }
 
 export function ThemeProvider({ children }: PropsWithChildren) {
-  const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
-
-  // Sync with the attribute the pre-hydration script already set
-  useEffect(() => {
-    setThemeState(readInitialTheme());
-  }, []);
+  const [theme, setThemeState] = useState<Theme>(() => readInitialTheme());
 
   const applyTheme = useCallback((next: Theme) => {
     if (typeof document !== "undefined") {
@@ -67,7 +61,7 @@ export function ThemeProvider({ children }: PropsWithChildren) {
 
   const value = useMemo<ThemeContextValue>(
     () => ({ theme, setTheme: applyTheme, toggle }),
-    [applyTheme, theme],
+    [applyTheme, theme, toggle],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

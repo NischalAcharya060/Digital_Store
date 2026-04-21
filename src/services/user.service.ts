@@ -7,6 +7,10 @@ import { firebaseAdminAuth, firebaseAdminDb } from "@/lib/firebase/admin";
 import { nowIso } from "@/lib/utils/time";
 import type { UserProfile, UserRole, UserStatus } from "@/types/domain";
 
+type RoleUpdateActor = Pick<UserProfile, "id" | "role">;
+
+const ADMIN_EDITABLE_ROLES = new Set<UserRole>(["user", "moderator"]);
+
 export async function ensureUserProfile(user: UserRecord): Promise<UserProfile> {
   const userRef = firebaseAdminDb.collection(COLLECTIONS.users).doc(user.uid);
   const userSnap = await userRef.get();
@@ -69,19 +73,41 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 }
 
 /**
- * Update a user's role. Guards against removing the last admin.
+ * Update a user's role with admin/super-admin boundaries.
  */
 export async function updateUserRole(
   userId: string,
   nextRole: UserRole,
-  actorId: string,
+  actor: RoleUpdateActor,
 ): Promise<UserProfile> {
-  if (userId === actorId && nextRole !== "admin") {
-    throw new Error("CANNOT_DEMOTE_SELF");
+  if (userId === actor.id) {
+    throw new Error("CANNOT_CHANGE_SELF_ROLE");
   }
 
   const current = await getUserProfile(userId);
   if (!current) throw new Error("USER_NOT_FOUND");
+
+  if (current.role === nextRole) {
+    return current;
+  }
+
+  if (current.role === "super_admin" || nextRole === "super_admin") {
+    throw new Error("SUPER_ADMIN_ROLE_LOCKED");
+  }
+
+  if (
+    actor.role === "admin" &&
+    (!ADMIN_EDITABLE_ROLES.has(current.role) || !ADMIN_EDITABLE_ROLES.has(nextRole))
+  ) {
+    throw new Error("ADMIN_ROLE_RESTRICTED");
+  }
+
+  if (
+    actor.role !== "super_admin" &&
+    (current.role === "admin" || nextRole === "admin")
+  ) {
+    throw new Error("ADMIN_ROLE_RESTRICTED");
+  }
 
   if (current.role === "admin" && nextRole !== "admin") {
     const admins = await countAdmins();
@@ -105,15 +131,23 @@ export async function updateUserRole(
 export async function setUserStatus(
   userId: string,
   nextStatus: UserStatus,
-  actorId: string,
+  actor: RoleUpdateActor,
   reason?: string,
 ): Promise<UserProfile> {
-  if (userId === actorId && nextStatus === "suspended") {
+  if (userId === actor.id && nextStatus === "suspended") {
     throw new Error("CANNOT_SUSPEND_SELF");
   }
 
   const current = await getUserProfile(userId);
   if (!current) throw new Error("USER_NOT_FOUND");
+
+  if (current.role === "super_admin") {
+    throw new Error("SUPER_ADMIN_ROLE_LOCKED");
+  }
+
+  if (actor.role === "admin" && !ADMIN_EDITABLE_ROLES.has(current.role)) {
+    throw new Error("ADMIN_ROLE_RESTRICTED");
+  }
 
   if (current.role === "admin" && nextStatus === "suspended") {
     const admins = await countAdmins();
@@ -126,7 +160,7 @@ export async function setUserStatus(
 
   if (nextStatus === "suspended") {
     update.suspendedAt = nowIso();
-    update.suspendedBy = actorId;
+    update.suspendedBy = actor.id;
     update.suspendedReason = reason?.trim() || "No reason provided";
   } else {
     update.suspendedAt = undefined;
@@ -155,11 +189,22 @@ export async function setUserStatus(
   return { ...current, ...update };
 }
 
-export async function deleteUserAccount(userId: string, actorId: string): Promise<void> {
-  if (userId === actorId) throw new Error("CANNOT_DELETE_SELF");
+export async function deleteUserAccount(
+  userId: string,
+  actor: RoleUpdateActor,
+): Promise<void> {
+  if (userId === actor.id) throw new Error("CANNOT_DELETE_SELF");
 
   const current = await getUserProfile(userId);
   if (!current) throw new Error("USER_NOT_FOUND");
+
+  if (current.role === "super_admin") {
+    throw new Error("SUPER_ADMIN_ROLE_LOCKED");
+  }
+
+  if (actor.role === "admin" && !ADMIN_EDITABLE_ROLES.has(current.role)) {
+    throw new Error("ADMIN_ROLE_RESTRICTED");
+  }
 
   if (current.role === "admin") {
     const admins = await countAdmins();

@@ -38,11 +38,11 @@ export function LoginForm() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md rounded-xl border border-[var(--color-border)] bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-semibold text-[var(--color-primary)]">
+    <div className="mx-auto w-full max-w-md rounded-2xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-6 shadow-[0_18px_50px_-24px_rgba(0,0,0,0.45)]">
+      <h1 className="text-2xl font-semibold text-[color:var(--color-text)]">
         {isSignup ? "Create account" : "Welcome back"}
       </h1>
-      <p className="mt-1 text-sm text-slate-600">
+      <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">
         Sign in to checkout, track orders, and access delivery codes instantly.
       </p>
 
@@ -60,7 +60,11 @@ export function LoginForm() {
           onChange={(event) => setPassword(event.target.value)}
         />
 
-        {error ? <p className="text-sm text-[var(--color-danger)]">{error}</p> : null}
+        {error ? (
+          <p className="rounded-lg border border-[color:var(--color-danger)]/30 bg-[color:color-mix(in_srgb,var(--color-danger)_10%,transparent)] px-3 py-2 text-sm text-[color:var(--color-danger)]">
+            {error}
+          </p>
+        ) : null}
 
         <Button fullWidth disabled={loading} onClick={handleEmailSubmit}>
           {loading ? "Please wait..." : isSignup ? "Create account" : "Sign in"}
@@ -90,7 +94,7 @@ export function LoginForm() {
       </div>
 
       <button
-        className="mt-4 text-sm text-[var(--color-secondary)]"
+        className="mt-4 text-sm text-[color:var(--color-accent)] transition hover:text-[color:var(--color-accent-2)]"
         onClick={() => setIsSignup((prev) => !prev)}
         type="button"
       >

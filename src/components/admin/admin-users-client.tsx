@@ -9,9 +9,14 @@ import type { UserProfile, UserRole, UserStatus } from "@/types/domain";
 
 type RoleFilter = "all" | UserRole;
 type StatusFilter = "all" | UserStatus;
+type ManagedRole = Exclude<UserRole, "super_admin">;
+
+const adminManagedRoles: ManagedRole[] = ["user", "moderator"];
+const superAdminManagedRoles: ManagedRole[] = ["user", "moderator", "admin"];
 
 const roleTabs: { key: RoleFilter; label: string }[] = [
   { key: "all", label: "All" },
+  { key: "super_admin", label: "Super admins" },
   { key: "admin", label: "Admins" },
   { key: "moderator", label: "Moderators" },
   { key: "user", label: "Users" },
@@ -25,6 +30,8 @@ const statusTabs: { key: StatusFilter; label: string }[] = [
 
 function roleBadgeVariant(role: UserRole) {
   switch (role) {
+    case "super_admin":
+      return "warning" as const;
     case "admin":
       return "accent" as const;
     case "moderator":
@@ -32,6 +39,34 @@ function roleBadgeVariant(role: UserRole) {
     default:
       return "neutral" as const;
   }
+}
+
+function getRoleOptions(actorRole: UserRole | null, targetRole: UserRole): UserRole[] {
+  if (targetRole === "super_admin") {
+    return ["super_admin"];
+  }
+
+  if (actorRole === "super_admin") {
+    return superAdminManagedRoles;
+  }
+
+  if (actorRole === "admin" && (targetRole === "user" || targetRole === "moderator")) {
+    return adminManagedRoles;
+  }
+
+  return [targetRole];
+}
+
+function canEditRole(
+  actorRole: UserRole | null,
+  targetRole: UserRole,
+  isSelf: boolean,
+  busy: boolean,
+) {
+  if (busy || isSelf || !actorRole) return false;
+  if (actorRole === "super_admin") return targetRole !== "super_admin";
+  if (actorRole === "admin") return targetRole === "user" || targetRole === "moderator";
+  return false;
 }
 
 function fmtDate(s?: string) {
@@ -46,6 +81,7 @@ function fmtDate(s?: string) {
 export function AdminUsersClient() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [actorId, setActorId] = useState<string>("");
+  const [actorRole, setActorRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
@@ -64,6 +100,7 @@ export function AdminUsersClient() {
       }
       setUsers(body.data.users);
       setActorId(body.data.actorId);
+      setActorRole(body.data.actorRole);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load users");
     } finally {
@@ -72,7 +109,11 @@ export function AdminUsersClient() {
   }
 
   useEffect(() => {
-    void load();
+    const timeoutId = window.setTimeout(() => {
+      void load();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   async function changeRole(user: UserProfile, nextRole: UserRole) {
@@ -170,6 +211,7 @@ export function AdminUsersClient() {
   const counts = useMemo(() => {
     return {
       all: users.length,
+      super_admin: users.filter((u) => u.role === "super_admin").length,
       admin: users.filter((u) => u.role === "admin").length,
       moderator: users.filter((u) => u.role === "moderator").length,
       user: users.filter((u) => u.role === "user").length,
@@ -199,8 +241,9 @@ export function AdminUsersClient() {
   return (
     <div className="space-y-4">
       {/* Stats */}
-      <section className="grid gap-3 sm:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-5">
         <StatTile label="Total users" value={counts.all} tone="accent" />
+        <StatTile label="Super admins" value={counts.super_admin} tone="danger" />
         <StatTile label="Admins" value={counts.admin} tone="accent" />
         <StatTile label="Moderators" value={counts.moderator} tone="accent-2" />
         <StatTile label="Suspended" value={counts.suspended} tone="danger" />
@@ -288,6 +331,14 @@ export function AdminUsersClient() {
                   const isSelf = user.id === actorId;
                   const isSuspended = user.status === "suspended";
                   const busy = busyId === user.id;
+                  const canManageUsers =
+                    actorRole === "admin" || actorRole === "super_admin";
+                  const roleOptions = getRoleOptions(actorRole, user.role);
+                  const roleEditable = canEditRole(actorRole, user.role, isSelf, busy);
+                  const accountActionRestricted =
+                    !canManageUsers ||
+                    user.role === "super_admin" ||
+                    (actorRole === "admin" && user.role === "admin");
 
                   return (
                     <tr key={user.id} className={cn(isSuspended && "opacity-80")}>
@@ -320,15 +371,17 @@ export function AdminUsersClient() {
                           <Badge label={user.role} variant={roleBadgeVariant(user.role)} />
                           <select
                             value={user.role}
-                            disabled={busy}
+                            disabled={!roleEditable}
                             onChange={(e) =>
                               void changeRole(user, e.target.value as UserRole)
                             }
                             className="h-8 rounded-md border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface-2)] px-2 text-xs text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none disabled:opacity-50"
                           >
-                            <option value="user">user</option>
-                            <option value="moderator">moderator</option>
-                            <option value="admin">admin</option>
+                            {roleOptions.map((role) => (
+                              <option key={role} value={role}>
+                                {role}
+                              </option>
+                            ))}
                           </select>
                         </div>
                       </td>
@@ -363,7 +416,7 @@ export function AdminUsersClient() {
                           <Button
                             size="sm"
                             variant={isSuspended ? "success" : "secondary"}
-                            disabled={busy || isSelf}
+                            disabled={busy || isSelf || accountActionRestricted}
                             onClick={() => void toggleStatus(user)}
                           >
                             {isSuspended ? "Reactivate" : "Ban"}
@@ -371,7 +424,7 @@ export function AdminUsersClient() {
                           <Button
                             size="sm"
                             variant="danger"
-                            disabled={busy || isSelf}
+                            disabled={busy || isSelf || accountActionRestricted}
                             onClick={() => void removeUser(user)}
                           >
                             Delete
@@ -387,6 +440,9 @@ export function AdminUsersClient() {
         )}
       </section>
 
+      <p className="text-[11px] text-[color:var(--color-text-subtle)]">
+        Admins can assign user/moderator roles only. Super admins can appoint admins.
+      </p>
       <p className="text-[11px] text-[color:var(--color-text-subtle)]">
         Suspending a user revokes their Firebase Auth tokens and blocks new sign-ins.
         Deleting is permanent — consider suspending first.

@@ -1,4 +1,4 @@
-export type UserRole = "user" | "moderator" | "admin";
+export type UserRole = "user" | "moderator" | "admin" | "super_admin";
 
 export type UserStatus = "active" | "suspended";
 
