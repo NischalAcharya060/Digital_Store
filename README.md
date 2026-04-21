@@ -1,36 +1,142 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Digital Store
 
-## Getting Started
+Production-oriented digital ecommerce platform for gift cards, gaming credits, and subscriptions.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Next.js 16 (App Router)
+- React 19
+- Tailwind CSS 4
+- Firebase Auth + Firestore
+- TypeScript + Zod validation
+
+## Implemented Core Features
+
+- Authentication
+	- Email/password and Google login via Firebase Auth
+	- HttpOnly server session cookie creation and logout endpoints
+	- User profile bootstrap with role support (`user`/`admin`)
+- Product System
+	- Public product listing and detail views
+	- Category-aware product cards
+	- Real-time stock display from inventory documents
+- Cart and Checkout
+	- Client cart state with persistent storage
+	- Quantity management and summary pricing
+	- Checkout order creation with payload validation
+- Payments
+	- eSewa verification route
+	- Khalti verification route
+	- Provider response handling and order status transition logic
+- Order and Delivery
+	- User order history and order detail views
+	- Secure instant delivery code retrieval after successful payment
+	- Idempotent payment finalization path for repeated verify calls
+- Inventory Management
+	- Admin inventory upload endpoint with deduplication
+	- Atomic inventory allocation in transaction during payment finalization
+	- Used codes marked and linked to order (`usedByOrderId`)
+	- Out-of-stock prevention at checkout and verify stages
+- Admin Panel
+	- Product create/manage screen
+	- Inventory upload screen
+	- Order status management screen
+	- Route-level and API-level RBAC checks
+
+## Project Structure
+
+```
+src/
+	app/
+		(shop)/
+		(auth)/
+		(admin)/
+		api/
+	components/
+		admin/
+		auth/
+		cart/
+		layout/
+		products/
+		ui/
+	hooks/
+	lib/
+		auth/
+		constants/
+		firebase/
+		utils/
+		validation/
+	services/
+	types/
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Firestore Collections
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `users`
+- `products`
+- `categories`
+- `orders`
+- `orderItems`
+- `inventory`
+- `transactions`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The schema follows the project documentation and is enforced through typed services.
 
-## Learn More
+## Important Security Behavior
 
-To learn more about Next.js, take a look at the following resources:
+- Server-side RBAC is enforced in both page layouts and API routes.
+- Session cookie is HttpOnly and generated through Firebase Admin.
+- Inventory allocation and delivery assignment happen only after successful payment verification.
+- Digital codes are never returned before `paid` status.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Copy `.env.example` to `.env.local` and fill all required values.
 
-## Deploy on Vercel
+## Firestore Security and Indexes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Security rules: `firestore.rules`
+- Composite indexes: `firestore.indexes.json`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy with Firebase CLI:
+
+```bash
+firebase deploy --only firestore:rules,firestore:indexes
+```
+
+## Development
+
+```bash
+npm install
+npm run dev
+```
+
+Lint:
+
+```bash
+npm run lint
+```
+
+## API Surface (Implemented)
+
+- `POST /api/auth/session`
+- `POST /api/auth/logout`
+- `GET /api/products`
+- `GET /api/products/:productId`
+- `POST /api/checkout/create-order`
+- `GET /api/orders`
+- `GET /api/orders/:orderId`
+- `GET /api/orders/:orderId/delivery`
+- `POST /api/payments/esewa/verify`
+- `POST /api/payments/khalti/verify`
+- `GET /api/admin/products`
+- `POST /api/admin/products`
+- `GET /api/admin/orders`
+- `PATCH /api/admin/orders/:orderId/status`
+- `POST /api/admin/inventory/upload`
+
+## Deployment Notes
+
+- Deploy Next.js to Vercel.
+- Configure Firebase service account values in deployment environment.
+- Ensure payment provider credentials and verify URLs are set per environment (sandbox/production).
