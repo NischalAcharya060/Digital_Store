@@ -6,7 +6,7 @@ export default function AdminUsersPage() {
       <header>
         <h1 className="text-2xl font-bold text-[color:var(--color-text)]">Users</h1>
         <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">
-          Manage user roles and access. Super admins control admin appointments.
+          Manage user roles and ban access. User deletion is disabled.
         </p>
       </header>
       <AdminUsersClient />

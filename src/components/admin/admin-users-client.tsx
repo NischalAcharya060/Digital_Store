@@ -84,10 +84,13 @@ export function AdminUsersClient() {
   const [actorRole, setActorRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [banModalUser, setBanModalUser] = useState<UserProfile | null>(null);
+  const [banReason, setBanReason] = useState("");
 
   async function load() {
     setLoading(true);
@@ -126,6 +129,7 @@ export function AdminUsersClient() {
 
     setBusyId(user.id);
     setError(null);
+    setNotice(null);
     try {
       const response = await fetch(`/api/admin/users/${user.id}/role`, {
         method: "PATCH",
@@ -146,25 +150,21 @@ export function AdminUsersClient() {
     }
   }
 
-  async function toggleStatus(user: UserProfile) {
-    const isSuspending = user.status !== "suspended";
-    let reason: string | null = "";
-    if (isSuspending) {
-      reason = prompt(`Reason for suspending ${user.email}?`, "");
-      if (reason === null) return;
-    } else {
-      if (!confirm(`Reactivate ${user.email}?`)) return;
-    }
-
+  async function updateStatus(
+    user: UserProfile,
+    nextStatus: UserStatus,
+    reason?: string,
+  ) {
     setBusyId(user.id);
     setError(null);
+    setNotice(null);
     try {
       const response = await fetch(`/api/admin/users/${user.id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          status: isSuspending ? "suspended" : "active",
-          reason: reason || undefined,
+          status: nextStatus,
+          reason: reason?.trim() || undefined,
         }),
       });
       const body = await response.json();
@@ -181,30 +181,41 @@ export function AdminUsersClient() {
     }
   }
 
-  async function removeUser(user: UserProfile) {
-    if (
-      !confirm(
-        `Permanently delete ${user.email}? This removes their profile and revokes access.`,
-      )
-    ) {
+  function openBanModal(user: UserProfile) {
+    setError(null);
+    setNotice(null);
+    setBanModalUser(user);
+    setBanReason("");
+  }
+
+  function closeBanModal() {
+    if (banModalUser && busyId === banModalUser.id) {
       return;
     }
+    setBanModalUser(null);
+    setBanReason("");
+  }
 
-    setBusyId(user.id);
+  async function submitBan() {
+    if (!banModalUser) return;
+    await updateStatus(banModalUser, "suspended", banReason);
+    setBanModalUser(null);
+    setBanReason("");
+  }
+
+  async function reactivateUser(user: UserProfile) {
+    if (!confirm(`Reactivate ${user.email}?`)) return;
+    await updateStatus(user, "active");
+  }
+
+  async function copyUserId(user: UserProfile) {
     setError(null);
+    setNotice(null);
     try {
-      const response = await fetch(`/api/admin/users/${user.id}`, {
-        method: "DELETE",
-      });
-      const body = await response.json();
-      if (!response.ok || !body.ok) {
-        throw new Error(body?.error?.message ?? "Delete failed");
-      }
-      setUsers((prev) => prev.filter((u) => u.id !== user.id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Delete failed");
-    } finally {
-      setBusyId(null);
+      await navigator.clipboard.writeText(user.id);
+      setNotice(`Copied UID for ${user.email}`);
+    } catch {
+      setError("Unable to copy UID");
     }
   }
 
@@ -303,6 +314,13 @@ export function AdminUsersClient() {
           <div className="border-b border-[color:var(--color-surface-border)] p-4">
             <p className="rounded-lg border border-[color:var(--color-danger)]/30 bg-[color:color-mix(in_srgb,var(--color-danger)_10%,transparent)] px-3 py-2 text-xs text-[color:var(--color-danger)]">
               {error}
+            </p>
+          </div>
+        ) : null}
+        {notice ? (
+          <div className="border-b border-[color:var(--color-surface-border)] p-4">
+            <p className="rounded-lg border border-[color:var(--color-success)]/30 bg-[color:color-mix(in_srgb,var(--color-success)_10%,transparent)] px-3 py-2 text-xs text-[color:var(--color-success)]">
+              {notice}
             </p>
           </div>
         ) : null}
@@ -417,17 +435,21 @@ export function AdminUsersClient() {
                             size="sm"
                             variant={isSuspended ? "success" : "secondary"}
                             disabled={busy || isSelf || accountActionRestricted}
-                            onClick={() => void toggleStatus(user)}
+                            onClick={() =>
+                              isSuspended
+                                ? void reactivateUser(user)
+                                : openBanModal(user)
+                            }
                           >
                             {isSuspended ? "Reactivate" : "Ban"}
                           </Button>
                           <Button
                             size="sm"
-                            variant="danger"
-                            disabled={busy || isSelf || accountActionRestricted}
-                            onClick={() => void removeUser(user)}
+                            variant="ghost"
+                            disabled={busy}
+                            onClick={() => void copyUserId(user)}
                           >
-                            Delete
+                            Copy UID
                           </Button>
                         </div>
                       </td>
@@ -445,8 +467,52 @@ export function AdminUsersClient() {
       </p>
       <p className="text-[11px] text-[color:var(--color-text-subtle)]">
         Suspending a user revokes their Firebase Auth tokens and blocks new sign-ins.
-        Deleting is permanent — consider suspending first.
+        User deletion is disabled in this admin panel.
       </p>
+
+      {banModalUser ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-5">
+            <h3 className="text-base font-semibold text-[color:var(--color-text)]">
+              Ban user
+            </h3>
+            <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">
+              Suspend <span className="font-medium">{banModalUser.email}</span>. They
+              will be signed out and blocked from new sign-ins.
+            </p>
+            <label className="mt-4 flex flex-col gap-1.5 text-sm text-[color:var(--color-text-muted)]">
+              <span className="font-medium text-[color:var(--color-text)]">
+                Reason (optional)
+              </span>
+              <textarea
+                rows={4}
+                value={banReason}
+                onChange={(e) => setBanReason(e.target.value)}
+                placeholder="Enter reason for this ban..."
+                className="resize-y rounded-lg border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-text-subtle)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
+              />
+            </label>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={busyId === banModalUser.id}
+                onClick={closeBanModal}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                variant="danger"
+                disabled={busyId === banModalUser.id}
+                onClick={() => void submitBan()}
+              >
+                {busyId === banModalUser.id ? "Banning..." : "Confirm ban"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

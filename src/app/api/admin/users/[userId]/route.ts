@@ -1,45 +1,16 @@
-import { fail, ok } from "@/lib/utils/api";
+import { fail } from "@/lib/utils/api";
 import { requireAdminUser } from "@/lib/auth/server";
-import { deleteUserAccount } from "@/services/user.service";
-
-function mapBusinessError(message: string) {
-  switch (message) {
-    case "CANNOT_DELETE_SELF":
-      return fail("CANNOT_DELETE_SELF", "You cannot delete your own account", 400);
-    case "ADMIN_ROLE_RESTRICTED":
-      return fail(
-        "ADMIN_ROLE_RESTRICTED",
-        "Only super admins can manage admin accounts",
-        403,
-      );
-    case "SUPER_ADMIN_ROLE_LOCKED":
-      return fail(
-        "SUPER_ADMIN_ROLE_LOCKED",
-        "Super admin accounts cannot be deleted here",
-        403,
-      );
-    case "LAST_ADMIN":
-      return fail("LAST_ADMIN", "Cannot delete the last remaining admin", 400);
-    case "USER_NOT_FOUND":
-      return fail("USER_NOT_FOUND", "User not found", 404);
-    default:
-      return null;
-  }
-}
 
 export async function DELETE(
   _request: Request,
-  context: { params: Promise<{ userId: string }> },
 ) {
   try {
-    const actor = await requireAdminUser();
-    const { userId } = await context.params;
-
-    await deleteUserAccount(userId, {
-      id: actor.id,
-      role: actor.role,
-    });
-    return ok({ deleted: userId });
+    await requireAdminUser();
+    return fail(
+      "USER_DELETE_DISABLED",
+      "User deletion is disabled. Use ban/suspend instead.",
+      405,
+    );
   } catch (error) {
     if (error instanceof Error) {
       if (error.message === "UNAUTHORIZED") {
@@ -48,9 +19,7 @@ export async function DELETE(
       if (error.message === "FORBIDDEN") {
         return fail("FORBIDDEN", "Admin access required", 403);
       }
-      const mapped = mapBusinessError(error.message);
-      if (mapped) return mapped;
     }
-    return fail("USER_DELETE_FAILED", "Unable to delete user", 500);
+    return fail("USER_DELETE_DISABLED", "User deletion is disabled", 405);
   }
 }
