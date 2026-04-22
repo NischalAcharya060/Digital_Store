@@ -6,6 +6,10 @@ export const sessionSchema = z.object({
   idToken: z.string().min(10),
 });
 
+export const recaptchaVerifySchema = z.object({
+  token: z.string().min(10),
+});
+
 export const createOrderSchema = z.object({
   items: z
     .array(

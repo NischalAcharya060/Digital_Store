@@ -1,9 +1,7 @@
 import { fail } from "@/lib/utils/api";
 import { requireAdminUser } from "@/lib/auth/server";
 
-export async function DELETE(
-  _request: Request,
-) {
+export async function DELETE() {
   try {
     await requireAdminUser();
     return fail(

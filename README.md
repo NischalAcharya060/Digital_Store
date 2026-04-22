@@ -93,6 +93,11 @@ The schema follows the project documentation and is enforced through typed servi
 
 Copy `.env.example` to `.env.local` and fill all required values.
 
+For signup protection, configure Google reCAPTCHA v2 (challenge) keys:
+
+- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`
+- `RECAPTCHA_SECRET_KEY`
+
 ## Firestore Security and Indexes
 
 - Security rules: `firestore.rules`

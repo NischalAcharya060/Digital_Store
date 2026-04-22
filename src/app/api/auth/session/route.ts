@@ -20,7 +20,14 @@ export async function POST(request: Request) {
     const decodedToken = await firebaseAdminAuth.verifyIdToken(parsed.data.idToken);
     const user = await firebaseAdminAuth.getUser(decodedToken.uid);
 
-    await ensureUserProfile(user);
+    const profile = await ensureUserProfile(user);
+    if (profile.status === "suspended") {
+      return fail(
+        "ACCOUNT_SUSPENDED",
+        "Your account has been banned or suspended. Please contact support.",
+        403,
+      );
+    }
 
     const expiresIn = SESSION_MAX_AGE_SECONDS * 1000;
     const sessionCookie = await firebaseAdminAuth.createSessionCookie(

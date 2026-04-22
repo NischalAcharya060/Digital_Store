@@ -41,12 +41,56 @@ interface AuthContextValue {
   profile: UserProfile | null;
   loading: boolean;
   signInEmail: (email: string, password: string) => Promise<void>;
-  signUpEmail: (email: string, password: string) => Promise<void>;
+  signUpEmail: (
+    email: string,
+    password: string,
+    recaptchaToken: string,
+  ) => Promise<void>;
   signInGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+function mapAuthError(error: unknown): Error {
+  if (!(error instanceof Error)) {
+    return new Error("Authentication failed. Please try again.");
+  }
+
+  const message = error.message;
+  if (message.includes("ACCOUNT_SUSPENDED") || message.includes("auth/user-disabled")) {
+    return new Error(
+      "Your account has been banned or suspended. Please contact support.",
+    );
+  }
+  if (
+    message.includes("auth/invalid-credential") ||
+    message.includes("auth/wrong-password") ||
+    message.includes("INVALID_LOGIN_CREDENTIALS")
+  ) {
+    return new Error("Invalid email or password.");
+  }
+  if (message.includes("auth/user-not-found")) {
+    return new Error("No account found for this email.");
+  }
+  if (message.includes("auth/email-already-in-use")) {
+    return new Error("An account with this email already exists.");
+  }
+  if (message.includes("auth/weak-password")) {
+    return new Error("Password is too weak. Use at least 6 characters.");
+  }
+  if (message.includes("auth/too-many-requests")) {
+    return new Error("Too many attempts. Please wait and try again.");
+  }
+  if (message.includes("auth/popup-closed-by-user")) {
+    return new Error("Google sign-in was cancelled.");
+  }
+  if (message.includes("auth/network-request-failed")) {
+    return new Error("Network error. Please check your internet connection.");
+  }
+
+  return new Error(message || "Authentication failed. Please try again.");
+}
 
 async function createServerSession(user: User) {
   const idToken = await user.getIdToken();
@@ -57,8 +101,41 @@ async function createServerSession(user: User) {
     body: JSON.stringify({ idToken }),
   });
 
-  if (!response.ok) {
-    throw new Error("Failed to create server session");
+  const body = (await response.json().catch(() => null)) as ApiResponse<{
+    message: string;
+  }> | null;
+
+  if (!response.ok || !body?.ok) {
+    throw new Error(
+      body && !body.ok ? body.error.message : "Failed to create server session",
+    );
+  }
+}
+
+async function verifyRecaptchaForSignup(recaptchaToken: string) {
+  const response = await fetch("/api/auth/recaptcha/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: recaptchaToken }),
+  });
+
+  const body = (await response.json().catch(() => null)) as ApiResponse<{
+    verified: boolean;
+  }> | null;
+
+  if (!response.ok || !body?.ok || !body.data.verified) {
+    throw new Error(
+      body && !body.ok
+        ? body.error.message
+        : "reCAPTCHA verification failed. Please try again.",
+    );
+  }
+}
+
+async function clearClientAuthState() {
+  const auth = getFirebaseClientAuth();
+  if (auth.currentUser) {
+    await signOut(auth);
   }
 }
 
@@ -98,33 +175,45 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, []);
 
   const signInEmail = useCallback(async (email: string, password: string) => {
-    const auth = getFirebaseClientAuth();
-    const credential = await signInWithEmailAndPassword(
-      auth,
-      email,
-      password,
-    );
-
-    await createServerSession(credential.user);
+    try {
+      const auth = getFirebaseClientAuth();
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      await createServerSession(credential.user);
+    } catch (error) {
+      await clearClientAuthState().catch(() => undefined);
+      throw mapAuthError(error);
+    }
   }, []);
 
-  const signUpEmail = useCallback(async (email: string, password: string) => {
-    const auth = getFirebaseClientAuth();
-    const credential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password,
-    );
-
-    await createServerSession(credential.user);
-  }, []);
+  const signUpEmail = useCallback(
+    async (email: string, password: string, recaptchaToken: string) => {
+      try {
+        await verifyRecaptchaForSignup(recaptchaToken);
+        const auth = getFirebaseClientAuth();
+        const credential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password,
+        );
+        await createServerSession(credential.user);
+      } catch (error) {
+        await clearClientAuthState().catch(() => undefined);
+        throw mapAuthError(error);
+      }
+    },
+    [],
+  );
 
   const signInGoogle = useCallback(async () => {
-    const auth = getFirebaseClientAuth();
-    const provider = new GoogleAuthProvider();
-    const credential = await signInWithPopup(auth, provider);
-
-    await createServerSession(credential.user);
+    try {
+      const auth = getFirebaseClientAuth();
+      const provider = new GoogleAuthProvider();
+      const credential = await signInWithPopup(auth, provider);
+      await createServerSession(credential.user);
+    } catch (error) {
+      await clearClientAuthState().catch(() => undefined);
+      throw mapAuthError(error);
+    }
   }, []);
 
   const logout = useCallback(async () => {

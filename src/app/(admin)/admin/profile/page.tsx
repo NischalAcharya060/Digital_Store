@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 import { Badge } from "@/components/ui/badge";
 import { requireStaffUser } from "@/lib/auth/server";
 import type { UserRole } from "@/types/domain";
@@ -40,7 +42,13 @@ function roleCapabilities(role: UserRole) {
 }
 
 export default async function AdminProfilePage() {
-  const profile = await requireStaffUser();
+  const profile = await requireStaffUser().catch((error: unknown) => {
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+      redirect("/login");
+    }
+
+    redirect("/");
+  });
 
   return (
     <div className="space-y-5">
