@@ -4,87 +4,112 @@ export function StoreFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-12 border-t border-[color:var(--color-surface-border)] bg-[color:var(--color-canvas)]">
-      <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-4">
-        <div className="md:col-span-2">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[linear-gradient(135deg,var(--color-accent),var(--color-accent-2))] text-sm font-bold text-white">
-              DS
-            </span>
-            <span className="text-base font-semibold text-[color:var(--color-text)]">
-              Digital Store
-            </span>
+    <footer className="mt-24 border-t border-[color:var(--color-surface-border)] bg-[color:var(--color-canvas)]">
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="grid gap-12 md:grid-cols-12">
+          {/* Wordmark + tagline */}
+          <div className="md:col-span-5">
+            <Link
+              href="/"
+              className="font-[family-name:var(--font-poppins)] text-2xl font-medium tracking-[-0.025em] text-[color:var(--color-text)]"
+            >
+              digitalstore<span className="text-[0.625rem] uppercase tracking-[0.2em] text-[color:var(--color-text-subtle)]"> np</span>
+            </Link>
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-[color:var(--color-text-muted)]">
+              A curated shop for digital essentials in Nepal — game top-ups,
+              gift cards and subscriptions, delivered the moment payment clears.
+            </p>
+            <p className="eyebrow mt-8">stay in the loop</p>
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-[color:var(--color-text-muted)]">
+              New drops every Friday. Email{" "}
+              <a
+                href="mailto:hello@digitalstore.np"
+                className="text-[color:var(--color-text)] underline decoration-[color:var(--color-surface-border-strong)] underline-offset-4 hover:decoration-[color:var(--color-text)]"
+              >
+                hello@digitalstore.np
+              </a>{" "}
+              to be first to know.
+            </p>
           </div>
-          <p className="mt-3 max-w-sm text-sm text-[color:var(--color-text-muted)]">
-            Nepal&apos;s fastest way to top up games, redeem gift cards, and unlock
-            subscriptions. Instant delivery backed by secure eSewa and Khalti payments.
-          </p>
-        </div>
 
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--color-text-subtle)]">
-            Store
-          </p>
-          <ul className="mt-3 space-y-2 text-sm text-[color:var(--color-text-muted)]">
-            <li>
-              <Link href="/products" className="hover:text-[color:var(--color-accent)]">
-                All products
-              </Link>
-            </li>
-            <li>
-              <Link href="/orders" className="hover:text-[color:var(--color-accent)]">
-                Track orders
-              </Link>
-            </li>
-            <li>
-              <Link href="/cart" className="hover:text-[color:var(--color-accent)]">
-                Your cart
-              </Link>
-            </li>
-            <li>
-              <Link href="/login" className="hover:text-[color:var(--color-accent)]">
-                Sign in
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--color-text-subtle)]">
-            We accept
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <PaymentPill label="eSewa" accent="#60bb46" />
-            <PaymentPill label="Khalti" accent="#5c2d91" />
-            <PaymentPill label="IME Pay" accent="#e11d48" />
-            <PaymentPill label="Fonepay" accent="#2563eb" />
-          </div>
-          <p className="mt-4 text-xs text-[color:var(--color-text-subtle)]">
-            24 × 7 instant delivery for verified stock.
-          </p>
+          {/* Link columns */}
+          <FooterColumn
+            label="shop"
+            links={[
+              { href: "/products", label: "all products" },
+              { href: "/products?category=games", label: "games" },
+              { href: "/products?category=gift-cards", label: "gift cards" },
+              { href: "/products?category=subscriptions", label: "subscriptions" },
+            ]}
+            className="md:col-span-2"
+          />
+          <FooterColumn
+            label="support"
+            links={[
+              { href: "/orders", label: "track order" },
+              { href: "/cart", label: "your cart" },
+              { href: "/support", label: "help centre" },
+              { href: "/contact", label: "contact" },
+            ]}
+            className="md:col-span-2"
+          />
+          <FooterColumn
+            label="company"
+            links={[
+              { href: "/about", label: "about" },
+              { href: "/privacy", label: "privacy" },
+              { href: "/terms", label: "terms" },
+              { href: "/login", label: "sign in" },
+            ]}
+            className="md:col-span-2"
+          />
         </div>
       </div>
 
       <div className="border-t border-[color:var(--color-surface-border)]">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-2 px-4 py-4 text-xs text-[color:var(--color-text-subtle)] sm:flex-row sm:px-6">
-          <p>© {year} Digital Store. All rights reserved.</p>
-          <p>Made in Nepal for gamers &amp; dreamers.</p>
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <p className="text-xs tracking-wide text-[color:var(--color-text-subtle)]">
+            © {year} digitalstore. all rights reserved.
+          </p>
+          <div className="flex items-center gap-5 text-xs uppercase tracking-[0.16em] text-[color:var(--color-text-subtle)]">
+            <span>esewa</span>
+            <span className="text-[color:var(--color-surface-border-strong)]">·</span>
+            <span>khalti</span>
+            <span className="text-[color:var(--color-surface-border-strong)]">·</span>
+            <span>ime pay</span>
+            <span className="text-[color:var(--color-surface-border-strong)]">·</span>
+            <span>fonepay</span>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
 
-function PaymentPill({ label, accent }: { label: string; accent: string }) {
+function FooterColumn({
+  label,
+  links,
+  className,
+}: {
+  label: string;
+  links: { href: string; label: string }[];
+  className?: string;
+}) {
   return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface-2)] px-3 py-1 text-xs font-medium text-[color:var(--color-text)]"
-    >
-      <span
-        className="inline-block h-2 w-2 rounded-full"
-        style={{ backgroundColor: accent, boxShadow: `0 0 8px ${accent}` }}
-      />
-      {label}
-    </span>
+    <div className={className}>
+      <p className="eyebrow">{label}</p>
+      <ul className="mt-4 space-y-3 text-sm">
+        {links.map((link) => (
+          <li key={link.href}>
+            <Link
+              href={link.href}
+              className="lowercase tracking-wide text-[color:var(--color-text-muted)] transition hover:text-[color:var(--color-text)]"
+            >
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

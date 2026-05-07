@@ -39,17 +39,16 @@ export default async function ProductsPage({
   }
 
   return (
-    <div className="space-y-8">
-      <header className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--color-accent)]">
-          Store
-        </p>
-        <h1 className="text-3xl font-bold text-[color:var(--color-text)] sm:text-4xl">
+    <div className="space-y-14">
+      <header className="max-w-3xl space-y-5 border-b border-[color:var(--color-surface-border)] pb-12">
+        <p className="eyebrow">the shop</p>
+        <h1 className="font-[family-name:var(--font-poppins)] text-4xl font-medium tracking-[-0.025em] text-[color:var(--color-text)] sm:text-5xl">
           All products
         </h1>
-        <p className="max-w-2xl text-sm text-[color:var(--color-text-muted)]">
-          Browse gift cards, gaming top-ups, and subscriptions. Filter by category,
-          search by keyword, or sort by price — all delivered instantly after payment.
+        <p className="max-w-2xl text-base leading-relaxed text-[color:var(--color-text-muted)]">
+          Every digital product we carry, in one place. Filter by collection,
+          search by keyword, or sort by price. Codes are delivered the moment
+          payment clears.
         </p>
       </header>
 

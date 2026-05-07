@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -11,8 +11,8 @@ import { useCart } from "@/hooks/use-cart";
 import { cn } from "@/lib/utils/cn";
 
 const baseLinks = [
-  { href: "/", label: "Home" },
-  { href: "/products", label: "Store" },
+  { href: "/", label: "home" },
+  { href: "/products", label: "shop" },
 ];
 
 export function StoreHeader() {
@@ -20,7 +20,10 @@ export function StoreHeader() {
   const { user, profile, logout } = useAuth();
   const { count } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const links = user ? [...baseLinks, { href: "/orders", label: "Orders" }] : baseLinks;
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const links = user ? [...baseLinks, { href: "/orders", label: "orders" }] : baseLinks;
 
   const isAdmin =
     profile?.role === "admin" ||
@@ -28,34 +31,46 @@ export function StoreHeader() {
     profile?.role === "moderator";
   const isAdminRoute = pathname.startsWith("/admin");
 
+  useEffect(() => {
+    if (searchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [searchOpen]);
+
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 border-b backdrop-blur-xl",
-        "border-[color:var(--color-surface-border)]",
-        "bg-[color:color-mix(in_srgb,var(--color-canvas)_80%,transparent)]",
+        "sticky top-0 z-30 backdrop-blur-xl",
+        "border-b border-[color:var(--color-surface-border)]",
+        "bg-[color:color-mix(in_srgb,var(--color-canvas)_92%,transparent)]",
       )}
     >
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2 text-base font-semibold tracking-tight">
-          <span className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[linear-gradient(135deg,var(--color-accent),var(--color-accent-2))] text-sm font-bold text-white shadow-[0_10px_30px_-10px_rgba(34,211,238,0.55)]">
-            DS
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
+        {/* Wordmark */}
+        <Link
+          href="/"
+          className="flex shrink-0 items-baseline gap-1 font-[family-name:var(--font-poppins)] text-[1.25rem] font-medium tracking-[-0.02em] text-[color:var(--color-text)]"
+        >
+          <span className="lowercase">digitalstore</span>
+          <span className="text-[0.625rem] uppercase tracking-[0.2em] text-[color:var(--color-text-subtle)]">
+            np
           </span>
-          <span className="hidden text-[color:var(--color-text)] sm:inline">Digital Store</span>
         </Link>
 
-        <nav className="hidden items-center gap-1 text-sm md:flex">
+        {/* Primary nav */}
+        <nav className="hidden items-center gap-7 text-sm md:flex">
           {links.map((item) => {
             const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                data-active={active}
                 className={cn(
-                  "rounded-full px-3 py-1.5 transition",
+                  "link-underline lowercase tracking-wide transition-colors",
                   active
-                    ? "bg-[color:color-mix(in_srgb,var(--color-accent)_12%,transparent)] text-[color:var(--color-accent)]"
-                    : "text-[color:var(--color-text-muted)] hover:bg-[color:var(--color-surface-2)] hover:text-[color:var(--color-text)]",
+                    ? "text-[color:var(--color-text)]"
+                    : "text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text)]",
                 )}
               >
                 {item.label}
@@ -65,75 +80,90 @@ export function StoreHeader() {
           {isAdmin ? (
             <Link
               href="/admin"
+              data-active={isAdminRoute}
               className={cn(
-                "rounded-full px-3 py-1.5 transition",
+                "link-underline lowercase tracking-wide transition-colors",
                 isAdminRoute
-                  ? "bg-[color:color-mix(in_srgb,var(--color-warning)_15%,transparent)] text-[color:var(--color-warning)]"
-                  : "text-[color:var(--color-text-muted)] hover:bg-[color:var(--color-surface-2)] hover:text-[color:var(--color-warning)]",
+                  ? "text-[color:var(--color-text)]"
+                  : "text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text)]",
               )}
             >
-              Admin
+              admin
             </Link>
           ) : null}
         </nav>
 
-        {/* Search — visual stub */}
-        <div className="ml-auto hidden flex-1 max-w-sm lg:block">
-          <div className="relative">
-            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--color-text-subtle)]" />
-            <input
-              type="search"
-              placeholder="Search games, gift cards, subscriptions..."
-              className={cn(
-                "h-10 w-full rounded-full pl-9 pr-4 text-sm transition",
-                "bg-[color:var(--color-surface-2)] text-[color:var(--color-text)]",
-                "border border-[color:var(--color-surface-border)]",
-                "placeholder:text-[color:var(--color-text-subtle)]",
-                "focus:outline-none focus:border-[color:var(--color-accent)] focus:ring-2 focus:ring-[color:var(--color-accent)]/25",
-              )}
-            />
+        <div className="ml-auto flex items-center gap-1">
+          {/* Search */}
+          <div className="hidden items-center md:flex">
+            {searchOpen ? (
+              <div className="relative flex items-center">
+                <SearchIcon className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--color-text-subtle)]" />
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  placeholder="search the shop"
+                  onBlur={(e) => {
+                    if (!e.currentTarget.value) setSearchOpen(false);
+                  }}
+                  className={cn(
+                    "h-9 w-56 bg-transparent pl-7 pr-2 text-sm tracking-wide placeholder:text-[color:var(--color-text-subtle)]",
+                    "border-b border-[color:var(--color-surface-border)] text-[color:var(--color-text)]",
+                    "focus:border-[color:var(--color-text)] focus:outline-none",
+                  )}
+                />
+              </div>
+            ) : (
+              <button
+                type="button"
+                aria-label="Open search"
+                onClick={() => setSearchOpen(true)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text)]"
+              >
+                <SearchIcon className="h-[18px] w-[18px]" />
+              </button>
+            )}
           </div>
-        </div>
 
-        <div className="ml-auto flex items-center gap-2 lg:ml-0">
           <ThemeToggle />
 
+          {/* Cart */}
           <Link
             href="/cart"
             aria-label="Cart"
             className={cn(
-              "relative inline-flex h-9 items-center gap-2 rounded-full border px-3 text-sm font-medium transition",
-              "border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] text-[color:var(--color-text)]",
-              "hover:border-[color:var(--color-accent)]/40 hover:text-[color:var(--color-accent)]",
+              "relative inline-flex h-9 w-9 items-center justify-center text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text)]",
             )}
           >
-            <CartIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">Cart</span>
+            <CartIcon className="h-[18px] w-[18px]" />
             {count > 0 ? (
-              <span className="absolute -right-1.5 -top-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-[color:var(--color-accent)] px-1 text-[10px] font-semibold text-[color:var(--color-text-inverse)]">
+              <span className="absolute -right-0.5 -top-0.5 inline-flex min-w-[1.125rem] items-center justify-center rounded-full border border-[color:var(--color-accent)] bg-[color:var(--color-canvas)] px-1 text-[10px] font-semibold leading-none text-[color:var(--color-text)]">
                 {count}
               </span>
             ) : null}
           </Link>
 
+          {/* Auth */}
           {user ? (
-            <div className="hidden items-center gap-2 md:flex">
-              <span className="max-w-[8rem] truncate text-xs text-[color:var(--color-text-subtle)]">
-                {profile?.name ?? user.email}
-              </span>
-              <Link href="/profile">
-                <Button size="sm" variant="ghost">
-                  Profile
-                </Button>
+            <div className="ml-2 hidden items-center gap-3 md:flex">
+              <Link
+                href="/profile"
+                className="text-xs lowercase tracking-wide text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text)]"
+              >
+                {profile?.name?.split(" ")[0]?.toLowerCase() ?? "profile"}
               </Link>
-              <Button size="sm" variant="secondary" onClick={logout}>
-                Logout
-              </Button>
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="text-xs lowercase tracking-wide text-[color:var(--color-text-subtle)] hover:text-[color:var(--color-text)]"
+              >
+                sign out
+              </button>
             </div>
           ) : (
-            <Link href="/login" className="hidden md:block">
-              <Button size="sm" variant="gradient">
-                Login
+            <Link href="/login" className="ml-2 hidden md:block">
+              <Button size="sm" variant="primary" className="lowercase tracking-wide">
+                sign in
               </Button>
             </Link>
           )}
@@ -143,11 +173,10 @@ export function StoreHeader() {
             onClick={() => setMobileOpen((prev) => !prev)}
             aria-label="Toggle menu"
             className={cn(
-              "inline-flex h-9 w-9 items-center justify-center rounded-full border md:hidden",
-              "border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] text-[color:var(--color-text)]",
+              "ml-1 inline-flex h-9 w-9 items-center justify-center text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text)] md:hidden",
             )}
           >
-            {mobileOpen ? <CloseIcon className="h-4 w-4" /> : <MenuIcon className="h-4 w-4" />}
+            {mobileOpen ? <CloseIcon className="h-[18px] w-[18px]" /> : <MenuIcon className="h-[18px] w-[18px]" />}
           </button>
         </div>
       </div>
@@ -155,7 +184,15 @@ export function StoreHeader() {
       {/* Mobile drawer */}
       {mobileOpen ? (
         <div className="border-t border-[color:var(--color-surface-border)] bg-[color:var(--color-canvas)] md:hidden">
-          <nav className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-3 sm:px-6">
+          <nav className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-4 sm:px-6">
+            <div className="relative mb-2">
+              <SearchIcon className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--color-text-subtle)]" />
+              <input
+                type="search"
+                placeholder="search"
+                className="h-10 w-full bg-transparent pl-8 pr-2 text-sm border-b border-[color:var(--color-surface-border)] focus:border-[color:var(--color-text)] focus:outline-none"
+              />
+            </div>
             {links.map((item) => {
               const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
               return (
@@ -164,10 +201,10 @@ export function StoreHeader() {
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    "rounded-lg px-3 py-2 text-sm transition",
+                    "px-1 py-3 text-sm lowercase tracking-wide transition border-b border-[color:var(--color-surface-border)]",
                     active
-                      ? "bg-[color:color-mix(in_srgb,var(--color-accent)_12%,transparent)] text-[color:var(--color-accent)]"
-                      : "text-[color:var(--color-text)] hover:bg-[color:var(--color-surface-2)]",
+                      ? "text-[color:var(--color-text)]"
+                      : "text-[color:var(--color-text-muted)]",
                   )}
                 >
                   {item.label}
@@ -178,34 +215,34 @@ export function StoreHeader() {
               <Link
                 href="/admin"
                 onClick={() => setMobileOpen(false)}
-                className="rounded-lg px-3 py-2 text-sm text-[color:var(--color-warning)] hover:bg-[color:var(--color-surface-2)]"
+                className="px-1 py-3 text-sm lowercase tracking-wide text-[color:var(--color-text-muted)] border-b border-[color:var(--color-surface-border)]"
               >
-                Admin
+                admin
               </Link>
             ) : null}
             {user ? (
-              <>
+              <div className="mt-4 flex items-center justify-between">
                 <Link
                   href="/profile"
                   onClick={() => setMobileOpen(false)}
-                  className="mt-1 rounded-lg px-3 py-2 text-sm text-[color:var(--color-text)] hover:bg-[color:var(--color-surface-2)]"
+                  className="text-xs lowercase tracking-wide text-[color:var(--color-text-muted)]"
                 >
-                  Profile
+                  {profile?.name ?? user.email}
                 </Link>
                 <button
-                  onClick={logout}
-                  className="mt-1 rounded-lg px-3 py-2 text-left text-sm text-[color:var(--color-text-muted)] hover:bg-[color:var(--color-surface-2)]"
+                  onClick={() => void logout()}
+                  className="text-xs lowercase tracking-wide text-[color:var(--color-text-subtle)]"
                 >
-                  Logout ({profile?.name ?? user.email})
+                  sign out
                 </button>
-              </>
+              </div>
             ) : (
               <Link
                 href="/login"
                 onClick={() => setMobileOpen(false)}
-                className="mt-1 rounded-lg bg-[linear-gradient(90deg,var(--color-accent),var(--color-accent-2))] px-3 py-2 text-center text-sm font-medium text-white"
+                className="mt-4 inline-flex h-10 items-center justify-center bg-[color:var(--color-accent)] text-sm lowercase tracking-wide text-[color:var(--color-text-inverse)]"
               >
-                Login
+                sign in
               </Link>
             )}
           </nav>
@@ -217,7 +254,7 @@ export function StoreHeader() {
 
 function SearchIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
       <circle cx="11" cy="11" r="7" />
       <path d="m21 21-4.3-4.3" />
     </svg>
@@ -226,27 +263,26 @@ function SearchIcon({ className }: { className?: string }) {
 
 function CartIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
-      <circle cx="9" cy="21" r="1" />
-      <circle cx="20" cy="21" r="1" />
-      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M5 7h14l-1.4 11.2a2 2 0 0 1-2 1.8H8.4a2 2 0 0 1-2-1.8L5 7Z" />
+      <path d="M9 7V5a3 3 0 0 1 6 0v2" />
     </svg>
   );
 }
 
 function MenuIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="4" y1="12" x2="20" y2="12" />
-      <line x1="4" y1="18" x2="20" y2="18" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <line x1="4" y1="7" x2="20" y2="7" />
+      <line x1="4" y1="13" x2="20" y2="13" />
+      <line x1="4" y1="19" x2="20" y2="19" />
     </svg>
   );
 }
 
 function CloseIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>

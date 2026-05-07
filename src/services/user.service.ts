@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { UserRecord } from "firebase-admin/auth";
+import { FieldValue } from "firebase-admin/firestore";
 
 import { COLLECTIONS } from "@/lib/constants/app";
 import { firebaseAdminAuth, firebaseAdminDb } from "@/lib/firebase/admin";
@@ -162,16 +163,24 @@ export async function setUserStatus(
     update.suspendedAt = nowIso();
     update.suspendedBy = actor.id;
     update.suspendedReason = reason?.trim() || "No reason provided";
-  } else {
-    update.suspendedAt = undefined;
-    update.suspendedBy = undefined;
-    update.suspendedReason = undefined;
   }
 
   await firebaseAdminDb
     .collection(COLLECTIONS.users)
     .doc(userId)
     .set(update, { merge: true });
+
+  // Handle field deletion for reactivation
+  if (nextStatus === "active") {
+    await firebaseAdminDb
+      .collection(COLLECTIONS.users)
+      .doc(userId)
+      .update({
+        suspendedAt: FieldValue.delete(),
+        suspendedBy: FieldValue.delete(),
+        suspendedReason: FieldValue.delete(),
+      });
+  }
 
   // Mirror to Firebase Auth — disabling revokes tokens and blocks sign-in.
   try {
@@ -186,7 +195,8 @@ export async function setUserStatus(
     }
   }
 
-  return { ...current, ...update };
+  // Return updated profile
+  return await getUserProfile(userId) as UserProfile;
 }
 
 export async function deleteUserAccount(

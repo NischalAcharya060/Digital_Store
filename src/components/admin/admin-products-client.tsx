@@ -152,15 +152,16 @@ export function AdminProductsClient() {
   }, [products, search]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       {/* FORM */}
-      <section className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-5">
-        <div className="flex items-center justify-between">
+      <section className="border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-8">
+        <div className="flex items-start justify-between border-b border-[color:var(--color-surface-border)] pb-6">
           <div>
-            <h2 className="text-sm font-semibold text-[color:var(--color-text)]">
+            <p className="eyebrow">{form.id ? "edit" : "new"}</p>
+            <h2 className="mt-2 font-[family-name:var(--font-poppins)] text-xl font-medium tracking-[-0.015em] text-[color:var(--color-text)]">
               {form.id ? "Edit product" : "Add product"}
             </h2>
-            <p className="text-xs text-[color:var(--color-text-muted)]">
+            <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">
               {form.id
                 ? `Editing #${form.id}. Save to publish changes.`
                 : "New products appear in the catalog instantly."}
@@ -173,9 +174,9 @@ export function AdminProductsClient() {
           ) : null}
         </div>
 
-        <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_220px]">
-          <div className="space-y-3">
-            <div className="grid gap-3 sm:grid-cols-2">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_220px]">
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <Input
                 label="Name"
                 placeholder="Apple Gift Card $50"
@@ -183,15 +184,13 @@ export function AdminProductsClient() {
                 onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               />
               <label className="flex flex-col gap-1.5 text-sm text-[color:var(--color-text-muted)]">
-                <span className="font-medium text-[color:var(--color-text)]">
-                  Category
-                </span>
+                <span className="font-medium text-[color:var(--color-text)]">Category</span>
                 <select
                   value={form.categoryId}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, categoryId: e.target.value }))
                   }
-                  className="h-11 rounded-lg border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] transition focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
+                  className="h-11 rounded-lg border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] transition focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/20"
                 >
                   <option value="">Select category</option>
                   {categories.map((c) => (
@@ -201,7 +200,7 @@ export function AdminProductsClient() {
                   ))}
                 </select>
                 {categories.length === 0 ? (
-                  <span className="text-[11px] text-[color:var(--color-warning)]">
+                  <span className="text-xs text-[color:var(--color-warning)]">
                     No categories yet — create one first.
                   </span>
                 ) : null}
@@ -223,9 +222,7 @@ export function AdminProductsClient() {
             </div>
 
             <label className="flex flex-col gap-1.5 text-sm text-[color:var(--color-text-muted)]">
-              <span className="font-medium text-[color:var(--color-text)]">
-                Description
-              </span>
+              <span className="font-medium text-[color:var(--color-text)]">Description</span>
               <textarea
                 rows={3}
                 placeholder="What does the buyer get?"
@@ -233,7 +230,7 @@ export function AdminProductsClient() {
                 onChange={(e) =>
                   setForm((p) => ({ ...p, description: e.target.value }))
                 }
-                className="resize-y rounded-lg border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] px-3 py-2 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-text-subtle)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
+                className="resize-y rounded-lg border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] px-3 py-2 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-text-subtle)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/20"
               />
             </label>
 
@@ -244,18 +241,18 @@ export function AdminProductsClient() {
                 onChange={(e) =>
                   setForm((p) => ({ ...p, active: e.target.checked }))
                 }
-                className="h-4 w-4 rounded border-[color:var(--color-surface-border)] accent-[color:var(--color-accent)]"
+                className="h-4 w-4 accent-[color:var(--color-accent)]"
               />
               <span>Active (visible in storefront)</span>
             </label>
 
             {error ? (
-              <p className="rounded-lg border border-[color:var(--color-danger)]/30 bg-[color:color-mix(in_srgb,var(--color-danger)_10%,transparent)] px-3 py-2 text-xs text-[color:var(--color-danger)]">
+              <div className="rounded-lg border border-[color:var(--color-danger)]/30 bg-[color:color-mix(in_srgb,var(--color-danger)_8%,transparent)] px-4 py-3 text-sm text-[color:var(--color-danger)]">
                 {error}
-              </p>
+              </div>
             ) : null}
 
-            <div className="flex gap-2">
+            <div className="flex gap-3 pt-2">
               <Button onClick={handleSave} disabled={saving}>
                 {saving ? "Saving..." : form.id ? "Save changes" : "Publish product"}
               </Button>
@@ -268,12 +265,10 @@ export function AdminProductsClient() {
           </div>
 
           {/* Preview */}
-          <div className="space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-[color:var(--color-text-subtle)]">
-              Preview
-            </p>
-            <div className="overflow-hidden rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface-2)]">
-              <div className="relative aspect-[4/3] w-full bg-[color:var(--color-canvas-2)]">
+          <div className="space-y-3">
+            <p className="eyebrow">preview</p>
+            <div className="overflow-hidden border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface-2)]">
+              <div className="relative aspect-[4/5] w-full bg-[color:var(--color-surface-3)]">
                 {form.image ? (
                   <Image
                     src={form.image}
@@ -283,16 +278,16 @@ export function AdminProductsClient() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-[color:var(--color-text-subtle)]">
-                    Image preview
+                  <div className="flex h-full items-center justify-center text-xs lowercase tracking-wide text-[color:var(--color-text-subtle)]">
+                    image preview
                   </div>
                 )}
               </div>
-              <div className="space-y-1 p-3">
-                <p className="line-clamp-1 text-sm font-semibold text-[color:var(--color-text)]">
+              <div className="space-y-1 p-4">
+                <p className="line-clamp-1 font-[family-name:var(--font-poppins)] text-sm font-medium text-[color:var(--color-text)]">
                   {form.name || "Untitled product"}
                 </p>
-                <p className="text-xs text-[color:var(--color-text-muted)]">
+                <p className="text-sm text-[color:var(--color-text-muted)]">
                   NPR {form.price || "0.00"}
                 </p>
               </div>
@@ -302,14 +297,15 @@ export function AdminProductsClient() {
       </section>
 
       {/* LIST */}
-      <section className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)]">
-        <div className="flex flex-col gap-3 border-b border-[color:var(--color-surface-border)] p-5 sm:flex-row sm:items-center sm:justify-between">
+      <section className="border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)]">
+        <div className="flex flex-col gap-4 border-b border-[color:var(--color-surface-border)] p-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-[color:var(--color-text)]">
-              Catalog
+            <p className="eyebrow">catalog</p>
+            <h2 className="mt-2 font-[family-name:var(--font-poppins)] text-xl font-medium tracking-[-0.015em] text-[color:var(--color-text)]">
+              All products
             </h2>
-            <p className="text-xs text-[color:var(--color-text-muted)]">
-              {products.length} products total
+            <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">
+              {products.length} {products.length === 1 ? "item" : "items"} in stock list
             </p>
           </div>
           <Input
@@ -321,19 +317,24 @@ export function AdminProductsClient() {
         </div>
 
         {loading ? (
-          <p className="p-5 text-sm text-[color:var(--color-text-muted)]">Loading...</p>
+          <div className="p-12 text-center text-sm text-[color:var(--color-text-muted)]">
+            Loading…
+          </div>
         ) : filtered.length === 0 ? (
-          <p className="p-6 text-center text-sm text-[color:var(--color-text-muted)]">
-            No products match.
-          </p>
+          <div className="p-12 text-center">
+            <p className="eyebrow">empty</p>
+            <p className="mt-3 text-sm text-[color:var(--color-text-muted)]">
+              No products match your search.
+            </p>
+          </div>
         ) : (
           <ul className="divide-y divide-[color:var(--color-surface-border)]">
             {filtered.map((row) => (
               <li
                 key={row.id}
-                className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center"
+                className="flex flex-col gap-4 p-6 transition-colors hover:bg-[color:var(--color-surface-2)] sm:flex-row sm:items-center"
               >
-                <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md bg-[color:var(--color-surface-2)]">
+                <div className="relative h-16 w-24 shrink-0 overflow-hidden bg-[color:var(--color-surface-2)]">
                   {row.image ? (
                     <Image
                       src={row.image}
@@ -347,7 +348,7 @@ export function AdminProductsClient() {
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate text-sm font-semibold text-[color:var(--color-text)]">
+                    <p className="truncate font-[family-name:var(--font-poppins)] text-base font-medium text-[color:var(--color-text)]">
                       {row.name}
                     </p>
                     <Badge
@@ -355,15 +356,28 @@ export function AdminProductsClient() {
                       variant={row.active ? "success" : "neutral"}
                     />
                   </div>
-                  <p className="text-xs text-[color:var(--color-text-muted)]">
+                  <p className="text-sm text-[color:var(--color-text-muted)]">
                     {row.categoryName ?? row.categoryId}
                   </p>
-                  <p className="mt-0.5 text-xs text-[color:var(--color-text-subtle)]">
-                    Stock: <span className={cn("font-semibold", row.stock === 0 ? "text-[color:var(--color-danger)]" : row.stock < 5 ? "text-[color:var(--color-warning)]" : "text-[color:var(--color-success)]")}>{row.stock}</span> · NPR {row.price.toFixed(2)}
+                  <p className="mt-1 text-sm text-[color:var(--color-text-subtle)]">
+                    Stock:{" "}
+                    <span
+                      className={cn(
+                        "font-medium",
+                        row.stock === 0
+                          ? "text-[color:var(--color-danger)]"
+                          : row.stock < 5
+                            ? "text-[color:var(--color-warning)]"
+                            : "text-[color:var(--color-success)]",
+                      )}
+                    >
+                      {row.stock}
+                    </span>{" "}
+                    · NPR {row.price.toFixed(2)}
                   </p>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <Button size="sm" variant="secondary" onClick={() => editRow(row)}>
                     Edit
                   </Button>

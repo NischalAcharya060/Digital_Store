@@ -16,10 +16,10 @@ interface AdminOrder {
 type StatusFilter = "all" | AdminOrder["status"];
 
 const filterTabs: { key: StatusFilter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "pending", label: "Pending" },
-  { key: "paid", label: "Paid" },
-  { key: "failed", label: "Failed" },
+  { key: "all", label: "all" },
+  { key: "pending", label: "pending" },
+  { key: "paid", label: "paid" },
+  { key: "failed", label: "failed" },
 ];
 
 function badgeVariant(status: AdminOrder["status"]) {
@@ -109,10 +109,10 @@ export function AdminOrdersClient() {
   }, [orders, filter, search]);
 
   return (
-    <div className="space-y-4">
-      <section className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)]">
-        <div className="flex flex-col gap-3 border-b border-[color:var(--color-surface-border)] p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap gap-1">
+    <div className="space-y-6">
+      <section className="border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)]">
+        <div className="flex flex-col gap-4 border-b border-[color:var(--color-surface-border)] p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap gap-x-6 gap-y-3">
             {filterTabs.map((tab) => {
               const active = filter === tab.key;
               return (
@@ -120,15 +120,16 @@ export function AdminOrdersClient() {
                   key={tab.key}
                   type="button"
                   onClick={() => setFilter(tab.key)}
+                  data-active={active}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition",
+                    "link-underline inline-flex items-center gap-2 text-sm lowercase tracking-wide transition-colors",
                     active
-                      ? "bg-[color:color-mix(in_srgb,var(--color-accent)_15%,transparent)] text-[color:var(--color-accent)] ring-1 ring-inset ring-[color:color-mix(in_srgb,var(--color-accent)_30%,transparent)]"
-                      : "text-[color:var(--color-text-muted)] hover:bg-[color:var(--color-surface-2)] hover:text-[color:var(--color-text)]",
+                      ? "text-[color:var(--color-text)]"
+                      : "text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text)]",
                   )}
                 >
                   {tab.label}
-                  <span className="rounded-full bg-[color:var(--color-surface-2)] px-1.5 py-0.5 text-[10px] text-[color:var(--color-text-subtle)]">
+                  <span className="text-[0.625rem] tabular-nums tracking-widest text-[color:var(--color-text-subtle)]">
                     {counts[tab.key]}
                   </span>
                 </button>
@@ -137,76 +138,82 @@ export function AdminOrdersClient() {
           </div>
           <input
             type="search"
-            placeholder="Search order ID or user..."
+            placeholder="Search order id or user..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-10 w-full rounded-full border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface-2)] px-4 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-text-subtle)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/25 sm:max-w-xs"
+            className="h-10 w-full bg-transparent px-1 text-sm tracking-wide placeholder:text-[color:var(--color-text-subtle)] border-b border-[color:var(--color-surface-border)] text-[color:var(--color-text)] focus:border-[color:var(--color-text)] focus:outline-none sm:max-w-xs"
           />
         </div>
 
         {error ? (
-          <div className="border-b border-[color:var(--color-surface-border)] p-4">
-            <p className="rounded-lg border border-[color:var(--color-danger)]/30 bg-[color:color-mix(in_srgb,var(--color-danger)_10%,transparent)] px-3 py-2 text-xs text-[color:var(--color-danger)]">
+          <div className="border-b border-[color:var(--color-surface-border)] p-6">
+            <div className="rounded-lg border border-[color:var(--color-danger)]/30 bg-[color:color-mix(in_srgb,var(--color-danger)_8%,transparent)] px-4 py-3 text-sm text-[color:var(--color-danger)]">
               {error}
-            </p>
+            </div>
           </div>
         ) : null}
 
         {loading ? (
-          <p className="p-5 text-sm text-[color:var(--color-text-muted)]">Loading orders...</p>
+          <div className="p-12 text-center text-sm text-[color:var(--color-text-muted)]">
+            Loading orders…
+          </div>
         ) : filtered.length === 0 ? (
-          <p className="p-6 text-center text-sm text-[color:var(--color-text-muted)]">
-            No orders match the current filter.
-          </p>
+          <div className="p-12 text-center">
+            <p className="eyebrow">empty</p>
+            <p className="mt-3 text-sm text-[color:var(--color-text-muted)]">
+              No orders match the current filter.
+            </p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
-                <tr className="text-left text-[10px] font-semibold uppercase tracking-wide text-[color:var(--color-text-subtle)]">
-                  <th className="px-5 py-2">Order</th>
-                  <th className="px-5 py-2">User</th>
-                  <th className="px-5 py-2">Placed</th>
-                  <th className="px-5 py-2">Amount</th>
-                  <th className="px-5 py-2">Status</th>
-                  <th className="px-5 py-2 text-right">Actions</th>
+                <tr className="border-b border-[color:var(--color-surface-border)] text-left">
+                  <Th>Order</Th>
+                  <Th>User</Th>
+                  <Th>Placed</Th>
+                  <Th>Amount</Th>
+                  <Th>Status</Th>
+                  <Th align="right">Actions</Th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[color:var(--color-surface-border)]">
                 {filtered.map((order) => (
-                  <tr key={order.id}>
-                    <td className="px-5 py-3 font-mono text-xs text-[color:var(--color-text)]">
+                  <tr
+                    key={order.id}
+                    className="transition-colors hover:bg-[color:var(--color-surface-2)]"
+                  >
+                    <td className="px-6 py-4 font-mono text-sm text-[color:var(--color-text)]">
                       #{order.id}
                     </td>
-                    <td className="px-5 py-3 font-mono text-xs text-[color:var(--color-text-muted)]">
+                    <td className="px-6 py-4 font-mono text-sm text-[color:var(--color-text-muted)]">
                       {order.userId.slice(0, 10)}…
                     </td>
-                    <td className="px-5 py-3 text-xs text-[color:var(--color-text-muted)]">
+                    <td className="px-6 py-4 text-sm text-[color:var(--color-text-muted)]">
                       {new Date(order.createdAt).toLocaleString()}
                     </td>
-                    <td className="px-5 py-3 font-semibold text-[color:var(--color-text)]">
+                    <td className="px-6 py-4 font-medium text-[color:var(--color-text)]">
                       NPR {order.totalAmount.toFixed(2)}
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-6 py-4">
                       <Badge label={order.status} variant={badgeVariant(order.status)} />
                     </td>
-                    <td className="px-5 py-3 text-right">
-                      <div className="inline-flex gap-1">
-                        <select
-                          value={order.status}
-                          disabled={busyId === order.id}
-                          onChange={(e) =>
-                            void updateStatus(
-                              order.id,
-                              e.target.value as AdminOrder["status"],
-                            )
-                          }
-                          className="h-8 rounded-md border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface-2)] px-2 text-xs text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none"
-                        >
-                          <option value="pending">pending</option>
-                          <option value="paid">paid</option>
-                          <option value="failed">failed</option>
-                        </select>
-                      </div>
+                    <td className="px-6 py-4 text-right">
+                      <select
+                        value={order.status}
+                        disabled={busyId === order.id}
+                        onChange={(e) =>
+                          void updateStatus(
+                            order.id,
+                            e.target.value as AdminOrder["status"],
+                          )
+                        }
+                        className="h-9 rounded-md border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/20 disabled:opacity-50"
+                      >
+                        <option value="pending">pending</option>
+                        <option value="paid">paid</option>
+                        <option value="failed">failed</option>
+                      </select>
                     </td>
                   </tr>
                 ))}
@@ -216,10 +223,41 @@ export function AdminOrdersClient() {
         )}
       </section>
 
-      <p className="text-[11px] text-[color:var(--color-text-subtle)]">
-        Tip: changing status here bypasses the payment flow — only use it for manual
-        corrections.
-      </p>
+      <div className="border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface-2)] p-4">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[color:var(--color-text-muted)] text-[10px] font-semibold text-[color:var(--color-text-muted)]">
+            i
+          </span>
+          <div>
+            <p className="text-sm font-medium text-[color:var(--color-text)]">
+              Status update tip
+            </p>
+            <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">
+              Changing status here bypasses the payment flow — only use it for
+              manual corrections.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
+  );
+}
+
+function Th({
+  children,
+  align = "left",
+}: {
+  children: React.ReactNode;
+  align?: "left" | "right";
+}) {
+  return (
+    <th
+      className={cn(
+        "px-6 py-3 text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-[color:var(--color-text-subtle)]",
+        align === "right" && "text-right",
+      )}
+    >
+      {children}
+    </th>
   );
 }

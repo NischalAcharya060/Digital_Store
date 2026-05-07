@@ -11,10 +11,10 @@ type SortKey = "featured" | "price-asc" | "price-desc" | "name";
 const ALL = "__all__";
 
 const sortOptions: { key: SortKey; label: string }[] = [
-  { key: "featured", label: "Featured" },
-  { key: "price-asc", label: "Price: low to high" },
-  { key: "price-desc", label: "Price: high to low" },
-  { key: "name", label: "Name" },
+  { key: "featured", label: "featured" },
+  { key: "price-asc", label: "price · low to high" },
+  { key: "price-desc", label: "price · high to low" },
+  { key: "name", label: "name" },
 ];
 
 interface Props {
@@ -66,134 +66,99 @@ export function ProductsBrowser({ products, categories, initialCategoryId }: Pro
   }, [products, activeCategory, inStockOnly, query, sort]);
 
   const chips: { id: string; name: string }[] = [
-    { id: ALL, name: "All" },
-    ...categories.map((c) => ({ id: c.id, name: c.name })),
+    { id: ALL, name: "all" },
+    ...categories.map((c) => ({ id: c.id, name: c.name.toLowerCase() })),
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Controls */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-1 items-center gap-3">
-          <div className="relative flex-1 max-w-md">
-            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--color-text-subtle)]" />
-            <input
-              type="search"
-              placeholder="Search products..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className={cn(
-                "h-10 w-full rounded-full pl-9 pr-4 text-sm transition",
-                "bg-[color:var(--color-surface-2)] text-[color:var(--color-text)]",
-                "border border-[color:var(--color-surface-border)]",
-                "placeholder:text-[color:var(--color-text-subtle)]",
-                "focus:outline-none focus:border-[color:var(--color-accent)] focus:ring-2 focus:ring-[color:var(--color-accent)]/25",
-              )}
-            />
-          </div>
+    <div className="space-y-10">
+      {/* Category links */}
+      <div className="space-y-3">
+        <p className="eyebrow">collections</p>
+        <div className="flex flex-wrap items-center gap-x-7 gap-y-2 border-b border-[color:var(--color-surface-border)] pb-4">
+          {chips.map((chip) => {
+            const active = activeCategory === chip.id;
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => setActiveCategory(chip.id)}
+                data-active={active}
+                className={cn(
+                  "link-underline text-sm lowercase tracking-wide transition-colors",
+                  active
+                    ? "text-[color:var(--color-text)]"
+                    : "text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text)]",
+                )}
+              >
+                {chip.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-          <label
-            className={cn(
-              "inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full border px-3 text-xs font-medium transition",
-              inStockOnly
-                ? "border-[color:var(--color-accent)]/50 bg-[color:color-mix(in_srgb,var(--color-accent)_12%,transparent)] text-[color:var(--color-accent)]"
-                : "border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text)]",
-            )}
-          >
+      {/* Controls */}
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative flex-1 max-w-md">
+          <SearchIcon className="pointer-events-none absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--color-text-subtle)]" />
+          <input
+            type="search"
+            placeholder="search products"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="h-10 w-full bg-transparent pl-7 pr-2 text-sm tracking-wide placeholder:text-[color:var(--color-text-subtle)] border-b border-[color:var(--color-surface-border)] text-[color:var(--color-text)] focus:border-[color:var(--color-text)] focus:outline-none"
+          />
+        </div>
+
+        <div className="flex items-center gap-6">
+          <label className="inline-flex items-center gap-2 text-xs lowercase tracking-wide text-[color:var(--color-text-muted)]">
             <input
               type="checkbox"
               checked={inStockOnly}
               onChange={(e) => setInStockOnly(e.target.checked)}
-              className="sr-only"
+              className="h-3.5 w-3.5 accent-[color:var(--color-accent)]"
             />
-            <span
-              className={cn(
-                "inline-block h-2 w-2 rounded-full",
-                inStockOnly
-                  ? "bg-[color:var(--color-accent)]"
-                  : "bg-[color:var(--color-text-subtle)]",
-              )}
-            />
-            In stock only
+            in stock
           </label>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-[color:var(--color-text-subtle)]">Sort</label>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortKey)}
-            className={cn(
-              "h-10 rounded-full px-3 text-sm transition",
-              "bg-[color:var(--color-surface)] text-[color:var(--color-text)]",
-              "border border-[color:var(--color-surface-border)]",
-              "focus:outline-none focus:border-[color:var(--color-accent)] focus:ring-2 focus:ring-[color:var(--color-accent)]/25",
-            )}
-          >
-            {sortOptions.map((opt) => (
-              <option key={opt.key} value={opt.key}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Category chips */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
-        {chips.map((chip) => {
-          const active = chip.id === activeCategory;
-          return (
-            <button
-              key={chip.id}
-              type="button"
-              onClick={() => setActiveCategory(chip.id)}
-              className={cn(
-                "shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition",
-                active
-                  ? "border-[color:var(--color-accent)]/50 bg-[color:color-mix(in_srgb,var(--color-accent)_15%,transparent)] text-[color:var(--color-accent)]"
-                  : "border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text)]",
-              )}
+          <div className="relative">
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortKey)}
+              className="appearance-none bg-transparent pr-5 text-xs lowercase tracking-wide text-[color:var(--color-text-muted)] focus:outline-none focus:text-[color:var(--color-text)]"
             >
-              {chip.name}
-            </button>
-          );
-        })}
+              {sortOptions.map((option) => (
+                <option key={option.key} value={option.key} className="bg-[color:var(--color-surface)] text-[color:var(--color-text)]">
+                  sort: {option.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-0 top-1/2 h-3 w-3 -translate-y-1/2 text-[color:var(--color-text-subtle)]" />
+          </div>
+        </div>
       </div>
 
-      {/* Result summary */}
-      <div className="flex items-center justify-between text-xs text-[color:var(--color-text-subtle)]">
-        <span>
-          Showing <span className="font-semibold text-[color:var(--color-text)]">{filtered.length}</span>{" "}
-          of {products.length} products
-        </span>
-        {(activeCategory !== ALL || inStockOnly || query) && (
-          <button
-            type="button"
-            onClick={() => {
-              setActiveCategory(ALL);
-              setInStockOnly(false);
-              setQuery("");
-            }}
-            className="font-medium text-[color:var(--color-accent)] hover:underline"
-          >
-            Clear filters
-          </button>
-        )}
+      {/* Result count */}
+      <div className="flex items-center justify-between">
+        <p className="text-xs lowercase tracking-[0.16em] text-[color:var(--color-text-subtle)]">
+          {filtered.length} product{filtered.length !== 1 ? "s" : ""}
+        </p>
       </div>
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[color:var(--color-surface-border)] bg-[color:var(--color-surface-2)] p-12 text-center">
-          <p className="text-sm font-medium text-[color:var(--color-text)]">
-            No products match your filters
-          </p>
-          <p className="mt-1 text-xs text-[color:var(--color-text-muted)]">
-            Try a different category or clear the search.
+        <div className="flex flex-col items-center justify-center border-t border-[color:var(--color-surface-border)] py-20 text-center">
+          <p className="eyebrow">nothing found</p>
+          <h3 className="mt-3 font-[family-name:var(--font-poppins)] text-xl font-medium text-[color:var(--color-text)]">
+            no products match this filter
+          </h3>
+          <p className="mt-2 max-w-sm text-sm text-[color:var(--color-text-muted)]">
+            Try a different collection, or clear the search.
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -205,18 +170,17 @@ export function ProductsBrowser({ products, categories, initialCategoryId }: Pro
 
 function SearchIcon({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
       <circle cx="11" cy="11" r="7" />
       <path d="m21 21-4.3-4.3" />
+    </svg>
+  );
+}
+
+function ChevronDown({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="m6 9 6 6 6-6" />
     </svg>
   );
 }

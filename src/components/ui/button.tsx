@@ -21,28 +21,28 @@ const sizeClassMap: Record<Size, string> = {
 
 const variantClassMap: Record<Variant, string> = {
   primary:
-    "bg-[color:var(--color-accent)] text-[color:var(--color-text-inverse)] shadow-[0_10px_30px_-12px_rgba(34,211,238,0.55)] " +
-    "hover:bg-[color:var(--color-accent-strong)] hover:shadow-[0_14px_40px_-14px_rgba(34,211,238,0.7)] " +
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)]",
+    "bg-[color:var(--color-accent)] text-[color:var(--color-text-inverse)] shadow-sm " +
+    "hover:bg-[color:var(--color-accent-strong)] hover:shadow-md " +
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)] focus-visible:ring-offset-2",
   gradient:
-    "text-white shadow-[0_12px_40px_-12px_rgba(168,85,247,0.55)] " +
-    "bg-[linear-gradient(90deg,var(--color-accent),var(--color-accent-2))] " +
-    "hover:shadow-[0_16px_48px_-12px_rgba(168,85,247,0.75)] " +
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent-2)]",
+    "text-white shadow-sm " +
+    "bg-[linear-gradient(135deg,var(--color-accent),var(--color-accent-2))] " +
+    "hover:shadow-md " +
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)] focus-visible:ring-offset-2",
   secondary:
     "border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] text-[color:var(--color-text)] " +
-    "hover:border-[color:var(--color-accent)]/40 hover:text-[color:var(--color-accent)] " +
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)]",
+    "hover:bg-[color:var(--color-surface-2)] hover:border-[color:var(--color-accent)]/30 " +
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)] focus-visible:ring-offset-2",
   ghost:
     "bg-transparent text-[color:var(--color-text-muted)] " +
     "hover:bg-[color:var(--color-surface-2)] hover:text-[color:var(--color-text)] " +
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)]",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)] focus-visible:ring-offset-2",
   danger:
-    "bg-[color:var(--color-danger)] text-white hover:opacity-90 " +
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-danger)]",
+    "bg-[color:var(--color-danger)] text-white shadow-sm hover:bg-red-700 hover:shadow-md " +
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-danger)] focus-visible:ring-offset-2",
   success:
-    "bg-[color:var(--color-success)] text-white hover:opacity-90 " +
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-success)]",
+    "bg-[color:var(--color-success)] text-white shadow-sm hover:bg-green-700 hover:shadow-md " +
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-success)] focus-visible:ring-offset-2",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(

@@ -1,69 +1,60 @@
 import Link from "next/link";
 import Image from "next/image";
 
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils/cn";
 import type { ProductWithStock } from "@/types/domain";
 
 export function ProductCard({ product }: { product: ProductWithStock }) {
   const inStock = product.stock > 0;
+  const lowStock = inStock && product.stock < 5;
 
   return (
     <Link
       href={`/products/${product.id}`}
-      className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-xl transition",
-        "border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)]",
-        "shadow-[0_1px_0_0_rgba(255,255,255,0.02)_inset,0_6px_20px_-12px_rgba(0,0,0,0.35)]",
-        "hover:border-[color:var(--color-accent)]/40",
-        "hover:shadow-[0_22px_60px_-20px_rgba(34,211,238,0.25)]",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)]",
-      )}
+      className="group flex h-full flex-col gap-4"
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-[color:var(--color-surface-2)]">
+      {/* Image */}
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-[color:var(--color-surface-2)]">
         <Image
           src={product.image}
           alt={product.name}
           fill
-          sizes="(max-width: 768px) 50vw, 25vw"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           unoptimized
-          className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]"
+          className={cn(
+            "h-full w-full object-cover transition-transform duration-700 ease-out",
+            "group-hover:scale-[1.03]",
+            !inStock && "opacity-70 grayscale-[20%]",
+          )}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,rgba(0,0,0,0.55))] opacity-70" />
-        <div className="absolute left-3 top-3">
-          <Badge
-            label={product.categoryName ?? "Digital"}
-            variant="accent"
-            className="backdrop-blur"
-          />
-        </div>
         {!inStock ? (
-          <div className="absolute right-3 top-3">
-            <Badge label="Sold out" variant="danger" className="backdrop-blur" />
+          <div className="absolute inset-x-0 bottom-0 bg-[color:var(--color-canvas)]/90 py-2 text-center text-[0.625rem] font-medium uppercase tracking-[0.2em] text-[color:var(--color-text)] backdrop-blur-sm">
+            sold out
+          </div>
+        ) : null}
+        {lowStock ? (
+          <div className="absolute right-3 top-3 inline-flex items-center gap-1.5 bg-[color:var(--color-canvas)]/90 px-2 py-1 text-[0.625rem] font-medium uppercase tracking-[0.18em] text-[color:var(--color-accent-2)] backdrop-blur-sm">
+            <span className="h-1 w-1 rounded-full bg-[color:var(--color-accent-2)]" />
+            only {product.stock} left
           </div>
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="line-clamp-1 text-sm font-semibold text-[color:var(--color-text)]">
+      {/* Meta */}
+      <div className="flex flex-1 flex-col">
+        <p className="eyebrow">
+          {product.categoryName ?? "digital"}
+        </p>
+        <h3 className="mt-2 font-[family-name:var(--font-poppins)] text-base font-medium leading-tight tracking-[-0.012em] text-[color:var(--color-text)] transition-colors group-hover:text-[color:var(--color-accent-2)]">
           {product.name}
         </h3>
-        <p className="line-clamp-2 text-xs text-[color:var(--color-text-muted)]">
+        <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-[color:var(--color-text-muted)]">
           {product.description}
         </p>
-
-        <div className="mt-auto flex items-end justify-between pt-2">
-          <div>
-            <p className="text-[10px] uppercase tracking-wide text-[color:var(--color-text-subtle)]">
-              From
-            </p>
-            <p className="text-base font-bold text-[color:var(--color-text)]">
-              NPR {product.price.toFixed(2)}
-            </p>
-          </div>
-          {inStock ? (
-            <Badge label={`${product.stock} left`} variant="success" />
-          ) : null}
+        <div className="mt-auto flex items-baseline gap-2 pt-4">
+          <span className="font-[family-name:var(--font-poppins)] text-base font-medium tracking-tight text-[color:var(--color-text)]">
+            NPR {product.price.toFixed(2)}
+          </span>
         </div>
       </div>
     </Link>

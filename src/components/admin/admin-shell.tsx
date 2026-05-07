@@ -18,11 +18,11 @@ const navGroups: {
   items: { href: string; label: string; icon: string }[];
 }[] = [
   {
-    label: "Overview",
+    label: "overview",
     items: [{ href: "/admin", label: "Dashboard", icon: "grid" }],
   },
   {
-    label: "Catalog",
+    label: "catalog",
     items: [
       { href: "/admin/products", label: "Products", icon: "box" },
       { href: "/admin/categories", label: "Categories", icon: "tag" },
@@ -30,11 +30,11 @@ const navGroups: {
     ],
   },
   {
-    label: "Commerce",
+    label: "commerce",
     items: [{ href: "/admin/orders", label: "Orders", icon: "cart" }],
   },
   {
-    label: "People",
+    label: "people",
     items: [
       { href: "/admin/profile", label: "Profile", icon: "user" },
       { href: "/admin/users", label: "Users", icon: "users" },
@@ -55,36 +55,30 @@ export function AdminShell({ children, adminName, adminEmail }: AdminShellProps)
       )?.label ?? "Admin";
 
   return (
-    <div className="relative flex min-h-dvh bg-[color:var(--color-canvas)]">
+    <div className="flex min-h-screen bg-[color:var(--color-canvas)]">
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 border-r border-[color:var(--color-surface-border)] bg-[color:var(--color-canvas-2)]",
-          "flex flex-col transition-transform lg:static lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-[color:var(--color-surface-border)] bg-[color:var(--color-canvas)] transition-transform lg:static lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
-        <div className="flex h-16 items-center gap-2 border-b border-[color:var(--color-surface-border)] px-5">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[linear-gradient(135deg,var(--color-accent),var(--color-accent-2))] text-sm font-bold text-white">
-            DS
-          </span>
-          <div className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold text-[color:var(--color-text)]">
-              Digital Store
+        <div className="flex h-16 items-center border-b border-[color:var(--color-surface-border)] px-6">
+          <Link href="/admin" className="flex items-baseline gap-2">
+            <span className="font-[family-name:var(--font-poppins)] text-lg font-medium tracking-[-0.02em] text-[color:var(--color-text)] lowercase">
+              digitalstore
             </span>
-            <span className="text-[10px] font-medium uppercase tracking-wider text-[color:var(--color-warning)]">
-              Admin
+            <span className="text-[0.625rem] uppercase tracking-[0.18em] text-[color:var(--color-text-subtle)]">
+              admin
             </span>
-          </div>
+          </Link>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 overflow-y-auto px-3 py-6">
           {navGroups.map((group) => (
-            <div key={group.label} className="mb-5">
-              <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)]">
-                {group.label}
-              </p>
-              <ul className="space-y-1">
+            <div key={group.label} className="mb-7">
+              <p className="eyebrow mb-2 px-3">{group.label}</p>
+              <ul className="space-y-px">
                 {group.items.map((item) => {
                   const active =
                     item.href === "/admin"
@@ -96,22 +90,28 @@ export function AdminShell({ children, adminName, adminEmail }: AdminShellProps)
                         href={item.href}
                         onClick={() => setMobileOpen(false)}
                         className={cn(
-                          "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
+                          "group relative flex items-center gap-3 px-3 py-2 text-sm transition-colors",
                           active
-                            ? "bg-[color:color-mix(in_srgb,var(--color-accent)_14%,transparent)] text-[color:var(--color-accent)]"
-                            : "text-[color:var(--color-text-muted)] hover:bg-[color:var(--color-surface-2)] hover:text-[color:var(--color-text)]",
+                            ? "text-[color:var(--color-text)]"
+                            : "text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text)]",
                         )}
                       >
+                        {active ? (
+                          <span
+                            aria-hidden
+                            className="absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 bg-[color:var(--color-accent)]"
+                          />
+                        ) : null}
                         <NavIcon
                           name={item.icon}
                           className={cn(
                             "h-4 w-4",
                             active
-                              ? "text-[color:var(--color-accent)]"
+                              ? "text-[color:var(--color-text)]"
                               : "text-[color:var(--color-text-subtle)] group-hover:text-[color:var(--color-text)]",
                           )}
                         />
-                        <span>{item.label}</span>
+                        <span className="tracking-tight">{item.label}</span>
                       </Link>
                     </li>
                   );
@@ -121,33 +121,35 @@ export function AdminShell({ children, adminName, adminEmail }: AdminShellProps)
           ))}
         </nav>
 
-        <div className="border-t border-[color:var(--color-surface-border)] p-3">
-          <div className="flex items-center gap-3 rounded-lg bg-[color:var(--color-surface-2)] p-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-accent),var(--color-accent-2))] text-xs font-bold text-white">
+        <div className="border-t border-[color:var(--color-surface-border)] p-4">
+          <div className="flex items-center gap-3 px-1 py-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface-2)] text-xs font-medium text-[color:var(--color-text)]">
               {adminName.slice(0, 1).toUpperCase()}
-            </span>
+            </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-semibold text-[color:var(--color-text)]">
+              <p className="truncate text-sm font-medium text-[color:var(--color-text)]">
                 {adminName}
               </p>
-              <p className="truncate text-[11px] text-[color:var(--color-text-subtle)]">
+              <p className="truncate text-xs text-[color:var(--color-text-subtle)]">
                 {adminEmail}
               </p>
             </div>
           </div>
-          <Link
-            href="/"
-            className="mt-2 flex items-center justify-center gap-2 rounded-lg border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] px-3 py-2 text-xs font-medium text-[color:var(--color-text-muted)] transition hover:text-[color:var(--color-accent)]"
-          >
-            ← Back to store
-          </Link>
-          <button
-            type="button"
-            onClick={() => void logout()}
-            className="mt-2 w-full rounded-lg border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] px-3 py-2 text-xs font-medium text-[color:var(--color-danger)] transition hover:bg-[color:color-mix(in_srgb,var(--color-danger)_10%,transparent)]"
-          >
-            Sign out
-          </button>
+          <div className="mt-3 flex items-center justify-between text-xs lowercase tracking-wide">
+            <Link
+              href="/"
+              className="text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text)]"
+            >
+              ← back to store
+            </Link>
+            <button
+              type="button"
+              onClick={() => void logout()}
+              className="text-[color:var(--color-text-subtle)] hover:text-[color:var(--color-danger)]"
+            >
+              sign out
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -157,42 +159,42 @@ export function AdminShell({ children, adminName, adminEmail }: AdminShellProps)
           type="button"
           aria-label="Close menu"
           onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-30 bg-black/40 lg:hidden"
         />
       ) : null}
 
       {/* Main content */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-[color:var(--color-surface-border)] bg-[color:color-mix(in_srgb,var(--color-canvas)_85%,transparent)] px-4 backdrop-blur-xl sm:px-6">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-[color:var(--color-surface-border)] bg-[color:color-mix(in_srgb,var(--color-canvas)_92%,transparent)] px-6 backdrop-blur-xl">
           <button
             type="button"
             aria-label="Toggle menu"
             onClick={() => setMobileOpen((v) => !v)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] text-[color:var(--color-text)] lg:hidden"
+            className="inline-flex h-9 w-9 items-center justify-center text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text)] lg:hidden"
           >
-            <NavIcon name="menu" className="h-4 w-4" />
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
           </button>
 
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-[color:var(--color-text-subtle)]">
-              Admin
-            </p>
-            <h1 className="truncate text-base font-semibold text-[color:var(--color-text)]">
+            <p className="eyebrow text-[0.625rem]">admin · {currentTitle.toLowerCase()}</p>
+            <h1 className="truncate font-[family-name:var(--font-poppins)] text-base font-medium tracking-[-0.012em] text-[color:var(--color-text)]">
               {currentTitle}
             </h1>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <ThemeToggle />
-            <span className="hidden items-center gap-1.5 rounded-full border border-[color:var(--color-warning)]/30 bg-[color:color-mix(in_srgb,var(--color-warning)_12%,transparent)] px-3 py-1 text-xs font-medium text-[color:var(--color-warning)] sm:inline-flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--color-warning)]" />
-              Admin mode
+            <span className="hidden items-center gap-2 border border-[color:var(--color-surface-border)] px-2.5 py-1 text-[0.625rem] font-medium uppercase tracking-[0.16em] text-[color:var(--color-text-muted)] sm:inline-flex">
+              <span className="h-1 w-1 rounded-full bg-[color:var(--color-accent-2)]" />
+              admin mode
             </span>
           </div>
         </header>
 
-        <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto w-full max-w-6xl">{children}</div>
+        <main className="flex-1 overflow-x-hidden bg-[color:var(--color-canvas)] p-6 lg:p-10">
+          <div className="mx-auto w-full max-w-7xl">{children}</div>
         </main>
       </div>
     </div>
@@ -204,7 +206,7 @@ function NavIcon({ name, className }: { name: string; className?: string }) {
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "currentColor",
-    strokeWidth: 2,
+    strokeWidth: 1.5,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
     "aria-hidden": true,
@@ -215,10 +217,10 @@ function NavIcon({ name, className }: { name: string; className?: string }) {
     case "grid":
       return (
         <svg {...common}>
-          <rect x="3" y="3" width="7" height="7" rx="1.5" />
-          <rect x="14" y="3" width="7" height="7" rx="1.5" />
-          <rect x="3" y="14" width="7" height="7" rx="1.5" />
-          <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
         </svg>
       );
     case "box":
@@ -247,17 +249,8 @@ function NavIcon({ name, className }: { name: string; className?: string }) {
     case "cart":
       return (
         <svg {...common}>
-          <circle cx="9" cy="21" r="1" />
-          <circle cx="20" cy="21" r="1" />
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-        </svg>
-      );
-    case "menu":
-      return (
-        <svg {...common}>
-          <line x1="4" y1="6" x2="20" y2="6" />
-          <line x1="4" y1="12" x2="20" y2="12" />
-          <line x1="4" y1="18" x2="20" y2="18" />
+          <path d="M5 7h14l-1.4 11.2a2 2 0 0 1-2 1.8H8.4a2 2 0 0 1-2-1.8L5 7Z" />
+          <path d="M9 7V5a3 3 0 0 1 6 0v2" />
         </svg>
       );
     case "user":
